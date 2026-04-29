@@ -1,0 +1,7 @@
+
+# Harness Automation System
+.harness/state.json
+.harness/backups/
+
+# tmp
+docs/tmp

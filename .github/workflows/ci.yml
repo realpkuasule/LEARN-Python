@@ -1,0 +1,42 @@
+name: Harness CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18]
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - run: npm ci
+
+      - name: Lint check
+        run: npx eslint --config eslint.config.js . --max-warnings=0
+
+      - name: Run tests
+        run: npm test
+
+      - name: Check dependency lock
+        run: |
+          if [ -f package-lock.json ]; then
+            npx lockfile-lint --path package-lock.json --allowed-hosts npm
+          fi
+
+      - name: Build check
+        run: npm run build --if-present
+
+      - name: Summary
+        run: echo "✅ All checks passed"

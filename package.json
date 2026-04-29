@@ -1,0 +1,9 @@
+{
+  "name": "python-dragonquest",
+  "version": "0.0.1",
+  "private": true,
+  "description": "勇者斗恶龙 - 游戏化Python编程教学网站",
+  "scripts": {
+    "prepare": "husky"
+  }
+}
