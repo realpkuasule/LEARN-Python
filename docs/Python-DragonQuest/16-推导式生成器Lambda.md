@@ -165,7 +165,7 @@ print(f"这场战斗总共造成了 {total_damage} 点伤害！")
 - 第 11-13 行：`for line in read_battle_log(...)`——每循环一次，生成器就「吐」一行。内存里始终只存当前这一行。
 - 第 12 行：`re.search(r"造成(\d+)点伤害", line).group(1)`——从这行文字里提取伤害数字。
 
-**关键区别：return vs yield**
+#### 关键区别：return vs yield
 
 |          | `return`           | `yield`            |
 | -------- | ------------------ | ------------------ |
@@ -237,8 +237,8 @@ print(half_price)
 > weapons = []
 > for item in backpack:
 
-    if item.endswith("剑") or item.endswith("盾") or item.endswith("杖"):
-        weapons.append(item)
+if item.endswith("剑") or item.endswith("盾") or item.endswith("杖"):
+weapons.append(item)
 
 ````」
 
