@@ -2,8 +2,45 @@
   "name": "python-dragonquest",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "description": "勇者斗恶龙 - 游戏化Python编程教学网站",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "execution:start": "node --experimental-strip-types services/execution/server.mjs",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-strip-types tests/contracts/*.test.mjs tests/domain/*.test.mjs tests/server/*.test.mjs tests/services/*.test.mjs",
+    "verify": "npm run test && npm run typecheck && npm run lint && npm run build",
     "prepare": "husky"
+  },
+  "dependencies": {
+    "@monaco-editor/react": "4.7.0",
+    "next": "16.2.10",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "react-markdown": "10.1.0",
+    "remark-gfm": "4.0.1",
+    "zustand": "5.0.14"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "20.5.2",
+    "@commitlint/config-conventional": "20.5.0",
+    "@types/node": "22.19.11",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "autoprefixer": "10.4.27",
+    "eslint": "9.39.5",
+    "eslint-config-next": "16.2.10",
+    "husky": "9.1.7",
+    "postcss": "8.5.19",
+    "prettier": "3.8.3",
+    "tailwindcss": "3.4.19",
+    "typescript": "5.9.3"
+  },
+  "overrides": {
+    "dompurify": "3.4.12",
+    "postcss": "8.5.19"
   }
 }

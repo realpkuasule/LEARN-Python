@@ -5,3 +5,11 @@
 
 # tmp
 docs/tmp
+
+# Web application build and local state
+node_modules/
+.next/
+coverage/
+*.tsbuildinfo
+.env*
+!.env.example
