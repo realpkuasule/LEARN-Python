@@ -10,6 +10,8 @@ import {
   worldMapEnvironmentAsset,
 } from "../../src/lib/environment-assets.ts";
 
+const ENVIRONMENT_MANIFEST = new URL("../../public/assets/environments/environment-manifest.json", import.meta.url);
+
 const readPngDimensions = async (assetPath) => {
   const bytes = await readFile(new URL(`../../public${assetPath}`, import.meta.url));
   assert.deepEqual([...bytes.subarray(0, 8)], [137, 80, 78, 71, 13, 10, 26, 10]);
@@ -41,4 +43,16 @@ test("every chapter environment used by the GUI is a 640 by 360 PNG", async () =
   ];
   const dimensions = await Promise.all(paths.map(readPngDimensions));
   assert.ok(dimensions.every(({ width, height }) => width === 640 && height === 360));
+});
+
+test("both planned environment themes include all twenty committed scenes", async () => {
+  const manifest = JSON.parse(await readFile(ENVIRONMENT_MANIFEST, "utf8"));
+  assert.deepEqual(manifest.availableThemes, ["european", "chinese"]);
+
+  for (const theme of manifest.availableThemes) {
+    const scenes = manifest.scenesByTheme[theme];
+    assert.equal(scenes.length, 20);
+    const dimensions = await Promise.all(scenes.map(({ path }) => readPngDimensions(path)));
+    assert.ok(dimensions.every(({ width, height }) => width === 640 && height === 360));
+  }
 });

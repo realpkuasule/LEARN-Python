@@ -1,0 +1,186 @@
+{
+  "version": 2,
+  "generatedAt": "2026-07-16T08:50:37.600Z",
+  "themes": {
+    "european": {
+      "gameArt": {
+        "hero-movement": {
+          "source": "/assets/art-v2/game-art/european/european-hero-movement-v2-source.png",
+          "path": "/assets/art-v2/game-art/european/european-hero-movement-v2.png",
+          "width": 1086,
+          "height": 1448,
+          "hasAlpha": true
+        },
+        "portraits": {
+          "source": "/assets/art-v2/game-art/european/european-portraits-v2-source.png",
+          "path": "/assets/art-v2/game-art/european/european-portraits-v2.png",
+          "width": 1672,
+          "height": 941,
+          "hasAlpha": true
+        },
+        "npc-monsters": {
+          "source": "/assets/art-v2/game-art/european/european-npc-monsters-v2-source.png",
+          "path": "/assets/art-v2/game-art/european/european-npc-monsters-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "bosses": {
+          "source": "/assets/art-v2/game-art/european/european-bosses-v2-source.png",
+          "path": "/assets/art-v2/game-art/european/european-bosses-v2.png",
+          "width": 1672,
+          "height": 941,
+          "hasAlpha": true
+        },
+        "magic-a": {
+          "source": "/assets/art-v2/game-art/european/european-magic-a-v2-source.png",
+          "path": "/assets/art-v2/game-art/european/european-magic-a-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "magic-b": {
+          "source": "/assets/art-v2/game-art/european/european-magic-b-v2-source.png",
+          "path": "/assets/art-v2/game-art/european/european-magic-b-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "items": {
+          "source": "/assets/art-v2/game-art/european/european-items-v2-source.png",
+          "path": "/assets/art-v2/game-art/european/european-items-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "props": {
+          "source": "/assets/art-v2/game-art/european/european-props-v2-source.png",
+          "path": "/assets/art-v2/game-art/european/european-props-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "vfx": {
+          "source": "/assets/art-v2/game-art/european/european-vfx-v2-source.png",
+          "path": "/assets/art-v2/game-art/european/european-vfx-v2.png",
+          "width": 1448,
+          "height": 1086,
+          "hasAlpha": true
+        }
+      },
+      "gui": {
+        "gui-panels": {
+          "source": "/assets/art-v2/gui/european/european-gui-panels-v2-source.png",
+          "path": "/assets/art-v2/gui/european/european-gui-panels-v2.png",
+          "width": 1448,
+          "height": 1086,
+          "hasAlpha": true
+        },
+        "gui-controls": {
+          "source": "/assets/art-v2/gui/european/european-gui-controls-v2-source.png",
+          "path": "/assets/art-v2/gui/european/european-gui-controls-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "gui-icons": {
+          "source": "/assets/art-v2/gui/european/european-gui-icons-v2-source.png",
+          "path": "/assets/art-v2/gui/european/european-gui-icons-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        }
+      }
+    },
+    "chinese": {
+      "gameArt": {
+        "hero-movement": {
+          "source": "/assets/art-v2/game-art/chinese/chinese-hero-movement-v2-source.png",
+          "path": "/assets/art-v2/game-art/chinese/chinese-hero-movement-v2.png",
+          "width": 1086,
+          "height": 1448,
+          "hasAlpha": true
+        },
+        "portraits": {
+          "source": "/assets/art-v2/game-art/chinese/chinese-portraits-v2-source.png",
+          "path": "/assets/art-v2/game-art/chinese/chinese-portraits-v2.png",
+          "width": 1672,
+          "height": 941,
+          "hasAlpha": true
+        },
+        "npc-monsters": {
+          "source": "/assets/art-v2/game-art/chinese/chinese-npc-monsters-v2-source.png",
+          "path": "/assets/art-v2/game-art/chinese/chinese-npc-monsters-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "bosses": {
+          "source": "/assets/art-v2/game-art/chinese/chinese-bosses-v2-source.png",
+          "path": "/assets/art-v2/game-art/chinese/chinese-bosses-v2.png",
+          "width": 1672,
+          "height": 941,
+          "hasAlpha": true
+        },
+        "magic-a": {
+          "source": "/assets/art-v2/game-art/chinese/chinese-magic-a-v2-source.png",
+          "path": "/assets/art-v2/game-art/chinese/chinese-magic-a-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "magic-b": {
+          "source": "/assets/art-v2/game-art/chinese/chinese-magic-b-v2-source.png",
+          "path": "/assets/art-v2/game-art/chinese/chinese-magic-b-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "items": {
+          "source": "/assets/art-v2/game-art/chinese/chinese-items-v2-source.png",
+          "path": "/assets/art-v2/game-art/chinese/chinese-items-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "props": {
+          "source": "/assets/art-v2/game-art/chinese/chinese-props-v2-source.png",
+          "path": "/assets/art-v2/game-art/chinese/chinese-props-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "vfx": {
+          "source": "/assets/art-v2/game-art/chinese/chinese-vfx-v2-source.png",
+          "path": "/assets/art-v2/game-art/chinese/chinese-vfx-v2.png",
+          "width": 1448,
+          "height": 1086,
+          "hasAlpha": true
+        }
+      },
+      "gui": {
+        "gui-panels": {
+          "source": "/assets/art-v2/gui/chinese/chinese-gui-panels-v2-source.png",
+          "path": "/assets/art-v2/gui/chinese/chinese-gui-panels-v2.png",
+          "width": 1450,
+          "height": 1085,
+          "hasAlpha": true
+        },
+        "gui-controls": {
+          "source": "/assets/art-v2/gui/chinese/chinese-gui-controls-v2-source.png",
+          "path": "/assets/art-v2/gui/chinese/chinese-gui-controls-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        },
+        "gui-icons": {
+          "source": "/assets/art-v2/gui/chinese/chinese-gui-icons-v2-source.png",
+          "path": "/assets/art-v2/gui/chinese/chinese-gui-icons-v2.png",
+          "width": 1254,
+          "height": 1254,
+          "hasAlpha": true
+        }
+      }
+    }
+  }
+}

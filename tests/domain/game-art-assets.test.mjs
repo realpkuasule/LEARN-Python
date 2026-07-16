@@ -13,6 +13,7 @@ import {
 } from "../../src/lib/game-art-assets.ts";
 
 const THEMES = ["european", "chinese"];
+const ART_MANIFEST = new URL("../../public/assets/art-v2/art-manifest.json", import.meta.url);
 const BOSS_CHAPTERS = [5, 6, 7, 9, 10, 11, 12, 14, 15, 17];
 const GUI_ICONS = ["coin", "quest", "dragon", "python-rune"];
 const CHAPTER_STATES = ["completed", "current", "available", "locked"];
@@ -95,6 +96,27 @@ test("both themes expose matching RGBA sprite sheets", async () => {
     assert.deepEqual(metadata, {
       width: asset.sheetWidth,
       height: asset.sheetHeight,
+      bitDepth: 8,
+      colorType: 6,
+    });
+  }));
+});
+
+test("every planned final atlas in the art manifest is committed and valid", async () => {
+  const manifest = JSON.parse(await readFile(ART_MANIFEST, "utf8"));
+  assert.deepEqual(Object.keys(manifest.themes).sort(), THEMES.toSorted());
+
+  const assets = Object.values(manifest.themes).flatMap((theme) => [
+    ...Object.values(theme.gameArt),
+    ...Object.values(theme.gui),
+  ]);
+  assert.equal(assets.length, 24);
+
+  await Promise.all(assets.map(async (asset) => {
+    const metadata = await pngMetadata(asset.path);
+    assert.deepEqual(metadata, {
+      width: asset.width,
+      height: asset.height,
       bitDepth: 8,
       colorType: 6,
     });

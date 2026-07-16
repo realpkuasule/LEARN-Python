@@ -1,0 +1,298 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-16T08:16:08.988Z",
+  "availableThemes": [
+    "european",
+    "chinese"
+  ],
+  "dimensions": {
+    "width": 640,
+    "height": 360
+  },
+  "scenesByTheme": {
+    "european": [
+      {
+        "id": "chapter-01-guild-hall",
+        "name": "冒险者公会",
+        "path": "/assets/environments/european/scenes/chapter-01-guild-hall.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-02-training-yard",
+        "name": "训练场",
+        "path": "/assets/environments/european/scenes/chapter-02-training-yard.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-03-character-shrine",
+        "name": "角色祭坛",
+        "path": "/assets/environments/european/scenes/chapter-03-character-shrine.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-04-weapon-shop",
+        "name": "武器店",
+        "path": "/assets/environments/european/scenes/chapter-04-weapon-shop.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-05-trial-cave",
+        "name": "试炼洞穴",
+        "path": "/assets/environments/european/scenes/chapter-05-trial-cave.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-06-treasure-vault",
+        "name": "宝藏库",
+        "path": "/assets/environments/european/scenes/chapter-06-treasure-vault.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-07-arena",
+        "name": "竞技场",
+        "path": "/assets/environments/european/scenes/chapter-07-arena.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-08-magic-academy",
+        "name": "魔法学院",
+        "path": "/assets/environments/european/scenes/chapter-08-magic-academy.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-09-guild-headquarters",
+        "name": "公会总部",
+        "path": "/assets/environments/european/scenes/chapter-09-guild-headquarters.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-10-great-warehouse",
+        "name": "大仓库",
+        "path": "/assets/environments/european/scenes/chapter-10-great-warehouse.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-11-wisdom-temple",
+        "name": "智慧神殿",
+        "path": "/assets/environments/european/scenes/chapter-11-wisdom-temple.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-12-bard-tavern",
+        "name": "吟游诗人酒馆",
+        "path": "/assets/environments/european/scenes/chapter-12-bard-tavern.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-13-ancient-library",
+        "name": "古代图书馆",
+        "path": "/assets/environments/european/scenes/chapter-13-ancient-library.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-14-cathedral-save-hall",
+        "name": "大教堂存档厅",
+        "path": "/assets/environments/european/scenes/chapter-14-cathedral-save-hall.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-15-abyss-rift",
+        "name": "深渊裂隙",
+        "path": "/assets/environments/european/scenes/chapter-15-abyss-rift.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-16-alchemy-workshop",
+        "name": "炼金工房",
+        "path": "/assets/environments/european/scenes/chapter-16-alchemy-workshop.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-17-dragon-nest",
+        "name": "恶龙之巢",
+        "path": "/assets/environments/european/scenes/chapter-17-dragon-nest.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "dragon-battle-arena",
+        "name": "最终龙战场",
+        "path": "/assets/environments/european/scenes/dragon-battle-arena.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "world-map",
+        "name": "世界地图",
+        "path": "/assets/environments/european/scenes/world-map.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "victory-camp",
+        "name": "终章营地",
+        "path": "/assets/environments/european/scenes/victory-camp.png",
+        "width": 640,
+        "height": 360
+      }
+    ],
+    "chinese": [
+      {
+        "id": "chapter-01-guild-hall",
+        "name": "冒险者公会",
+        "path": "/assets/environments/chinese/scenes/chapter-01-guild-hall.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-02-training-yard",
+        "name": "训练场",
+        "path": "/assets/environments/chinese/scenes/chapter-02-training-yard.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-03-character-shrine",
+        "name": "角色祭坛",
+        "path": "/assets/environments/chinese/scenes/chapter-03-character-shrine.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-04-weapon-shop",
+        "name": "武器店",
+        "path": "/assets/environments/chinese/scenes/chapter-04-weapon-shop.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-05-trial-cave",
+        "name": "试炼洞穴",
+        "path": "/assets/environments/chinese/scenes/chapter-05-trial-cave.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-06-treasure-vault",
+        "name": "宝藏库",
+        "path": "/assets/environments/chinese/scenes/chapter-06-treasure-vault.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-07-arena",
+        "name": "竞技场",
+        "path": "/assets/environments/chinese/scenes/chapter-07-arena.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-08-magic-academy",
+        "name": "魔法学院",
+        "path": "/assets/environments/chinese/scenes/chapter-08-magic-academy.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-09-guild-headquarters",
+        "name": "公会总部",
+        "path": "/assets/environments/chinese/scenes/chapter-09-guild-headquarters.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-10-great-warehouse",
+        "name": "大仓库",
+        "path": "/assets/environments/chinese/scenes/chapter-10-great-warehouse.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-11-wisdom-temple",
+        "name": "智慧神殿",
+        "path": "/assets/environments/chinese/scenes/chapter-11-wisdom-temple.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-12-bard-tavern",
+        "name": "吟游诗人酒馆",
+        "path": "/assets/environments/chinese/scenes/chapter-12-bard-tavern.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-13-ancient-library",
+        "name": "古代图书馆",
+        "path": "/assets/environments/chinese/scenes/chapter-13-ancient-library.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-14-cathedral-save-hall",
+        "name": "大教堂存档厅",
+        "path": "/assets/environments/chinese/scenes/chapter-14-cathedral-save-hall.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-15-abyss-rift",
+        "name": "深渊裂隙",
+        "path": "/assets/environments/chinese/scenes/chapter-15-abyss-rift.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-16-alchemy-workshop",
+        "name": "炼金工房",
+        "path": "/assets/environments/chinese/scenes/chapter-16-alchemy-workshop.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "chapter-17-dragon-nest",
+        "name": "恶龙之巢",
+        "path": "/assets/environments/chinese/scenes/chapter-17-dragon-nest.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "dragon-battle-arena",
+        "name": "最终龙战场",
+        "path": "/assets/environments/chinese/scenes/dragon-battle-arena.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "world-map",
+        "name": "世界地图",
+        "path": "/assets/environments/chinese/scenes/world-map.png",
+        "width": 640,
+        "height": 360
+      },
+      {
+        "id": "victory-camp",
+        "name": "终章营地",
+        "path": "/assets/environments/chinese/scenes/victory-camp.png",
+        "width": 640,
+        "height": 360
+      }
+    ]
+  }
+}
