@@ -34,6 +34,7 @@ const SHEETS = {
 } as const satisfies Readonly<Record<string, SpriteSheet>>;
 
 const ITEM_INDEX: Readonly<Record<string, number>> = {
+  "hint-potion": 0,
   "wood-sword": 1,
   "cloth-armor": 2,
   "true-sword": 3,

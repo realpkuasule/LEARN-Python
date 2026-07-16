@@ -6,6 +6,10 @@
   padding: 16px;
 }
 
+.chapter-mobile-tabs {
+  display: none;
+}
+
 .course-scroll,
 .mission-scroll {
   max-height: calc(100dvh - 88px);
@@ -130,11 +134,84 @@
   text-align: center;
 }
 
+.boss-encounter {
+  border: 3px solid var(--accent-pressed);
+  background: var(--canvas);
+  padding: 18px;
+}
+
+.boss-encounter h3 {
+  margin: 8px 0 12px;
+  color: var(--accent);
+  font-size: 1.5rem;
+}
+
+.boss-encounter blockquote {
+  border-left: 4px solid var(--accent);
+  margin: 0 0 16px;
+  padding: 8px 12px;
+  color: var(--text);
+}
+
+.boss-dialogue-options {
+  display: grid;
+  gap: 10px;
+}
+
+.boss-dialogue-options .pixel-button {
+  justify-content: flex-start;
+  text-align: left;
+}
+
+.chapter-scene.battle-running .chapter-boss-sprite {
+  animation: boss-brace 160ms steps(2, end) 2;
+}
+
+.chapter-scene.battle-failed {
+  animation: boss-counter 120ms steps(2, end) 2;
+}
+
+.chapter-scene.battle-passed .chapter-boss-sprite {
+  filter: grayscale(0.7) drop-shadow(4px 5px 0 rgb(7 16 29 / 72%));
+  opacity: 0.42;
+  transform: translateY(20px) rotate(4deg);
+}
+
+.final-victory {
+  overflow: hidden;
+  margin-top: 18px;
+  padding: 18px;
+}
+
+.final-victory-scene {
+  position: relative;
+  aspect-ratio: 16 / 7;
+  border-bottom: 3px solid var(--border-dark);
+  margin: -18px -18px 18px;
+  overflow: hidden;
+}
+
+@keyframes boss-brace {
+  50% { transform: translateX(-2px); }
+}
+
+@keyframes boss-counter {
+  50% { transform: translateX(2px); }
+}
+
 .editor-frame {
   overflow: hidden;
   border: 4px solid var(--border-dark);
   box-shadow: inset 0 0 0 2px var(--border-light);
   margin: 18px 0;
+}
+
+.editor-loading {
+  display: grid;
+  min-height: 42vh;
+  place-items: center;
+  background: #0d1425;
+  color: var(--text-muted);
 }
 
 .result-panel {
@@ -165,9 +242,50 @@
   white-space: pre-wrap;
 }
 
+.hint-panel {
+  border: 3px solid var(--accent-pressed);
+  background: var(--surface-raised);
+  margin-top: 18px;
+  padding: 14px;
+}
+
+.hint-panel h3 {
+  margin: 0;
+  color: var(--accent);
+}
+
+.hint-panel ol {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 0;
+  padding-left: 24px;
+}
+
 @media (max-width: 1023px) {
   .chapter-layout {
     grid-template-columns: 1fr;
+  }
+
+  .chapter-mobile-tabs {
+    position: sticky;
+    z-index: 3;
+    top: 108px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    border: 3px solid var(--border-dark);
+    background: var(--canvas);
+    padding: 8px;
+  }
+
+  .chapter-mobile-tabs .pixel-button[aria-pressed="true"] {
+    background: var(--accent);
+    color: var(--border-dark);
+  }
+
+  .chapter-layout.view-course .mission-scroll,
+  .chapter-layout.view-code .course-scroll {
+    display: none;
   }
 
   .course-scroll,
@@ -179,6 +297,10 @@
 @media (max-width: 639px) {
   .chapter-layout {
     padding: 10px;
+  }
+
+  .chapter-mobile-tabs {
+    top: 104px;
   }
 
   .course-scroll,

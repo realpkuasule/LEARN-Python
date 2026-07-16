@@ -5,6 +5,8 @@ import test from "node:test";
 import { CHAPTERS } from "../../src/domain/chapter-catalog.ts";
 import {
   chapterEnvironmentAsset,
+  dragonBattleEnvironmentAsset,
+  victoryCampEnvironmentAsset,
   worldMapEnvironmentAsset,
 } from "../../src/lib/environment-assets.ts";
 
@@ -24,12 +26,19 @@ test("the confirmed European environment skin exposes stable scene paths", () =>
     chapterEnvironmentAsset(17),
     "/assets/environments/european/scenes/chapter-17-dragon-nest.png",
   );
+  assert.equal(dragonBattleEnvironmentAsset(), "/assets/environments/european/scenes/dragon-battle-arena.png");
+  assert.equal(victoryCampEnvironmentAsset(), "/assets/environments/european/scenes/victory-camp.png");
   assert.throws(() => chapterEnvironmentAsset(0), RangeError);
   assert.throws(() => chapterEnvironmentAsset(18), RangeError);
 });
 
 test("every chapter environment used by the GUI is a 640 by 360 PNG", async () => {
-  const paths = [worldMapEnvironmentAsset(), ...CHAPTERS.map(({ number }) => chapterEnvironmentAsset(number))];
+  const paths = [
+    worldMapEnvironmentAsset(),
+    dragonBattleEnvironmentAsset(),
+    victoryCampEnvironmentAsset(),
+    ...CHAPTERS.map(({ number }) => chapterEnvironmentAsset(number)),
+  ];
   const dimensions = await Promise.all(paths.map(readPngDimensions));
   assert.ok(dimensions.every(({ width, height }) => width === 640 && height === 360));
 });

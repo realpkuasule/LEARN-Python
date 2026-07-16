@@ -1,6 +1,8 @@
 import { getChapter } from "./chapter-catalog.ts";
+import { addInventoryItem, inventoryQuantity } from "./inventory.ts";
+import { unlockEarnedTitles } from "./titles.ts";
 
-export const GAME_STATE_VERSION = 2;
+export const GAME_STATE_VERSION = 3;
 export const DEFAULT_SFX_VOLUME = 0.55;
 export const BOSS_EXP_BONUS = 200;
 export const BOSS_COIN_BONUS = 300;
@@ -25,7 +27,7 @@ export interface EquipmentSlots {
 }
 
 export interface GameState {
-  readonly version: 2;
+  readonly version: 3;
   readonly hero: {
     readonly id: string;
     readonly name: string;
@@ -42,8 +44,13 @@ export interface GameState {
     readonly currentChapter: number;
     readonly completedChapters: readonly number[];
     readonly attempts: Readonly<Record<string, number>>;
+    readonly hintsRevealed: Readonly<Record<string, number>>;
   };
   readonly inventory: readonly { readonly itemId: string; readonly quantity: number }[];
+  readonly achievements: {
+    readonly unlockedTitles: readonly string[];
+    readonly aiRequests: number;
+  };
   readonly settings: {
     readonly soundEnabled: boolean;
     readonly sfxVolume: number;
@@ -104,11 +111,12 @@ export const createGameState = (
         boots: null,
       },
     },
-    progress: { currentChapter: 1, completedChapters: [], attempts: {} },
+    progress: { currentChapter: 1, completedChapters: [], attempts: {}, hintsRevealed: {} },
     inventory: [
       { itemId: "wood-sword", quantity: 1 },
       { itemId: "cloth-armor", quantity: 1 },
     ],
+    achievements: { unlockedTitles: [], aiRequests: 0 },
     settings: { soundEnabled: true, sfxVolume: DEFAULT_SFX_VOLUME, reducedMotion: false },
   };
 };
@@ -120,6 +128,11 @@ export const updateAudioSettings = (state: GameState, settings: AudioSettings): 
 
   return { ...state, settings: { ...state.settings, ...settings } };
 };
+
+export const updateReducedMotion = (state: GameState, reducedMotion: boolean): GameState => ({
+  ...state,
+  settings: { ...state.settings, reducedMotion },
+});
 
 export const canAccessChapter = (state: GameState, chapterNumber: number): boolean => (
   chapterNumber === 1 || chapterNumber <= state.progress.currentChapter
@@ -136,7 +149,7 @@ export const completeChapter = (state: GameState, chapterNumber: number): GameSt
   const level = levelForExp(totalExp);
   const completedChapters = [...state.progress.completedChapters, chapterNumber].sort((a, b) => a - b);
 
-  return {
+  let completedState: GameState = {
     ...state,
     hero: {
       ...state.hero,
@@ -152,6 +165,11 @@ export const completeChapter = (state: GameState, chapterNumber: number): GameSt
       completedChapters,
     },
   };
+
+  for (const itemId of chapter.dropItemIds ?? []) {
+    if (inventoryQuantity(completedState, itemId) === 0) completedState = addInventoryItem(completedState, itemId);
+  }
+  return unlockEarnedTitles(completedState);
 };
 
 export const recordAttempt = (state: GameState, exerciseId: string): GameState => ({
@@ -163,4 +181,9 @@ export const recordAttempt = (state: GameState, exerciseId: string): GameState =
       [exerciseId]: (state.progress.attempts[exerciseId] ?? 0) + 1,
     },
   },
+});
+
+export const recordAiRequest = (state: GameState): GameState => unlockEarnedTitles({
+  ...state,
+  achievements: { ...state.achievements, aiRequests: state.achievements.aiRequests + 1 },
 });

@@ -129,7 +129,12 @@
           "bossName": { "type": "string", "minLength": 1 },
           "rewardExp": { "type": "integer", "minimum": 100 },
           "rewardCoins": { "type": "integer", "minimum": 50 },
-          "titleReward": { "type": "string", "minLength": 1 }
+          "titleReward": { "type": "string", "minLength": 1 },
+          "dropItemIds": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "type": "string", "minLength": 1 }
+          }
         }
       },
       "ChapterDetail": {

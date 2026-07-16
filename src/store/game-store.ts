@@ -8,12 +8,19 @@ import {
   completeChapter as applyChapterCompletion,
   createGameState,
   updateAudioSettings as applyAudioSettings,
+  updateReducedMotion as applyReducedMotion,
   type AudioSettings,
   type GameState,
   recordAttempt as applyAttempt,
 } from "@/domain/game-state";
-import { equipItem as applyEquipItem, purchaseItem as applyPurchaseItem } from "@/domain/equipment";
+import {
+  equipItem as applyEquipItem,
+  purchaseHintPotion as applyPurchaseHintPotion,
+  purchaseItem as applyPurchaseItem,
+  useHintPotion as applyUseHintPotion,
+} from "@/domain/equipment";
 import { parseGameState } from "@/domain/save-game";
+import { selectTitle as applyTitleSelection } from "@/domain/titles";
 
 interface GameStore {
   readonly game: GameState | null;
@@ -22,8 +29,12 @@ interface GameStore {
   readonly completeChapter: (chapterNumber: number) => void;
   readonly recordAttempt: (exerciseId: string) => void;
   readonly purchaseItem: (itemId: string) => void;
+  readonly purchaseHintPotion: () => void;
+  readonly consumeHintPotion: (exerciseId: string) => void;
   readonly equipItem: (itemId: string) => void;
+  readonly selectTitle: (title: string) => void;
   readonly updateAudioSettings: (settings: AudioSettings) => void;
+  readonly updateReducedMotion: (reducedMotion: boolean) => void;
   readonly loadGame: (game: GameState) => void;
   readonly reset: () => void;
   readonly setHydrated: () => void;
@@ -44,11 +55,23 @@ export const useGameStore = create<GameStore>()(
       purchaseItem: (itemId) => set(({ game }) => ({
         game: game ? applyPurchaseItem(game, itemId) : null,
       })),
+      purchaseHintPotion: () => set(({ game }) => ({
+        game: game ? applyPurchaseHintPotion(game) : null,
+      })),
+      consumeHintPotion: (exerciseId) => set(({ game }) => ({
+        game: game ? applyUseHintPotion(game, exerciseId) : null,
+      })),
       equipItem: (itemId) => set(({ game }) => ({
         game: game ? applyEquipItem(game, itemId) : null,
       })),
+      selectTitle: (title) => set(({ game }) => ({
+        game: game ? applyTitleSelection(game, title) : null,
+      })),
       updateAudioSettings: (settings) => set(({ game }) => ({
         game: game ? applyAudioSettings(game, settings) : null,
+      })),
+      updateReducedMotion: (reducedMotion) => set(({ game }) => ({
+        game: game ? applyReducedMotion(game, reducedMotion) : null,
       })),
       loadGame: (game) => set({ game }),
       reset: () => set({ game: null }),

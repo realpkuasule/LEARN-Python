@@ -1,6 +1,11 @@
 import type { EquipmentSlots, GameState, Stats } from "./game-state.ts";
+import { addInventoryItem, inventoryQuantity, removeInventoryItem } from "./inventory.ts";
+import { unlockEarnedTitles } from "./titles.ts";
 
 export type EquipmentSlot = keyof EquipmentSlots;
+export const HINT_POTION_ID = "hint-potion";
+export const HINT_POTION_PRICE = 1;
+const MAX_HINTS_PER_EXERCISE = 3;
 
 export interface EquipmentItem {
   readonly id: string;
@@ -40,14 +45,35 @@ export const purchaseItem = (state: GameState, itemId: string): GameState => {
   if (state.progress.currentChapter < item.unlockChapter) {
     throw new Error(`当前章节尚未解锁这件装备（完成第 ${item.unlockChapter - 1} 章后开放）`);
   }
-  if (state.inventory.some((entry) => entry.itemId === itemId)) throw new Error("已经拥有这件装备");
   if (state.hero.coins < item.price) throw new Error("金币不足");
 
-  return {
+  return unlockEarnedTitles(addInventoryItem({
     ...state,
     hero: { ...state.hero, coins: state.hero.coins - item.price },
-    inventory: [...state.inventory, { itemId, quantity: 1 }],
-  };
+  }, itemId));
+};
+
+export const purchaseHintPotion = (state: GameState): GameState => {
+  if (state.hero.coins < HINT_POTION_PRICE) throw new Error("金币不足");
+  return addInventoryItem({
+    ...state,
+    hero: { ...state.hero, coins: state.hero.coins - HINT_POTION_PRICE },
+  }, HINT_POTION_ID);
+};
+
+export const useHintPotion = (state: GameState, exerciseId: string): GameState => {
+  const revealed = state.progress.hintsRevealed[exerciseId] ?? 0;
+  if (revealed >= MAX_HINTS_PER_EXERCISE) throw new Error("本章三级提示已经全部解锁");
+  if (inventoryQuantity(state, HINT_POTION_ID) === 0) throw new Error("背包中没有提示药水");
+
+  const consumed = removeInventoryItem(state, HINT_POTION_ID);
+  return unlockEarnedTitles({
+    ...consumed,
+    progress: {
+      ...consumed.progress,
+      hintsRevealed: { ...consumed.progress.hintsRevealed, [exerciseId]: revealed + 1 },
+    },
+  });
 };
 
 export const equipItem = (state: GameState, itemId: string): GameState => {

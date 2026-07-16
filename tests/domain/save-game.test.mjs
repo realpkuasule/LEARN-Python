@@ -10,10 +10,16 @@ test("a contracted game state survives export and import", () => {
   assert.deepEqual(parseGameState(serializeGameState(state)), state);
 });
 
-test("legacy v1 saves migrate to the current audio preferences contract", () => {
+test("legacy v1 saves migrate to the current progress and achievement contract", () => {
   const legacy = {
-    ...state,
     version: 1,
+    hero: state.hero,
+    progress: {
+      currentChapter: state.progress.currentChapter,
+      completedChapters: state.progress.completedChapters,
+      attempts: state.progress.attempts,
+    },
+    inventory: state.inventory,
     settings: { soundEnabled: false, reducedMotion: true },
   };
 
@@ -23,8 +29,24 @@ test("legacy v1 saves migrate to the current audio preferences contract", () => 
   });
 });
 
+test("legacy v2 saves add hint and title progress without losing data", () => {
+  const legacy = {
+    version: 2,
+    hero: state.hero,
+    progress: {
+      currentChapter: state.progress.currentChapter,
+      completedChapters: state.progress.completedChapters,
+      attempts: state.progress.attempts,
+    },
+    inventory: state.inventory,
+    settings: state.settings,
+  };
+
+  assert.deepEqual(parseGameState(JSON.stringify(legacy)), state);
+});
+
 test("imports reject unknown versions and missing required sections", () => {
-  assert.throws(() => parseGameState(JSON.stringify({ ...state, version: 3 })), /版本/);
+  assert.throws(() => parseGameState(JSON.stringify({ ...state, version: 4 })), /版本/);
   const withoutHero = JSON.parse(JSON.stringify(state));
   Reflect.deleteProperty(withoutHero, "hero");
   assert.throws(() => parseGameState(JSON.stringify(withoutHero)), /存档/);

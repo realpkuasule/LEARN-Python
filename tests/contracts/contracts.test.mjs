@@ -42,11 +42,14 @@ test("execution responses expose every UI state required by the design contract"
 test("chapter exercises publish only the number of assessment cases", async () => {
   const contract = JSON.parse(await readFile(openApiPath, "utf8"));
   const exercise = contract.components.schemas.Exercise;
+  const chapter = contract.components.schemas.ChapterSummary;
 
   assert.ok(exercise.required.includes("testCount"));
   assert.equal(exercise.properties.testCount.minimum, 1);
   assert.equal(Object.hasOwn(exercise.properties, "hiddenTests"), false);
   assert.equal(Object.hasOwn(exercise.properties, "expectedOutput"), false);
+  assert.equal(chapter.properties.dropItemIds.type, "array");
+  assert.equal(chapter.properties.dropItemIds.uniqueItems, true);
 });
 
 test("execution requests support bounded source code and standard input", async () => {
@@ -60,10 +63,17 @@ test("execution requests support bounded source code and standard input", async 
 test("local save contract is versioned and rejects unknown fields", async () => {
   const schema = JSON.parse(await readFile(gameStatePath, "utf8"));
 
-  assert.equal(schema.properties.version.const, 2);
+  assert.equal(schema.properties.version.const, 3);
   assert.equal(schema.additionalProperties, false);
+  assert.ok(schema.required.includes("achievements"));
   assert.equal(schema.properties.hero.additionalProperties, false);
+  assert.equal(schema.properties.hero.properties.title.enum.length, 17);
+  assert.ok(schema.properties.hero.properties.title.enum.includes(""));
   assert.equal(schema.properties.progress.properties.completedChapters.uniqueItems, true);
+  assert.ok(schema.properties.progress.required.includes("hintsRevealed"));
+  assert.equal(schema.properties.inventory.maxItems, 20);
+  assert.equal(schema.properties.achievements.properties.unlockedTitles.items.enum.length, 16);
+  assert.ok(schema.properties.achievements.properties.unlockedTitles.items.enum.includes("人工智能"));
   assert.deepEqual(schema.properties.settings.required, ["soundEnabled", "sfxVolume", "reducedMotion"]);
   assert.equal(schema.properties.settings.properties.sfxVolume.minimum, 0);
   assert.equal(schema.properties.settings.properties.sfxVolume.maximum, 1);

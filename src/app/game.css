@@ -161,9 +161,35 @@
 
 .audio-settings {
   display: grid;
-  grid-template-columns: minmax(240px, 1fr) auto minmax(220px, 0.7fr);
+  grid-template-columns: minmax(240px, 1fr) auto minmax(220px, 0.7fr) auto;
   align-items: center;
   gap: 24px;
+}
+
+.title-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.title-card {
+  border: 3px solid var(--border-dark);
+  background: var(--canvas);
+  padding: 14px;
+}
+
+.title-card h3,
+.title-card p {
+  margin: 0 0 8px;
+}
+
+.title-card.unlocked {
+  border-color: var(--accent-pressed);
+}
+
+.title-card.locked {
+  filter: grayscale(0.8);
+  opacity: 0.72;
 }
 
 .audio-volume {
@@ -294,6 +320,18 @@
   padding: 20px;
 }
 
+.share-card-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;
+}
+
+.share-card-actions p {
+  margin: 0;
+}
+
 .map-node-card {
   width: 100%;
   min-height: 144px;
@@ -382,9 +420,10 @@ button.map-node-card:hover {
 
   .hero-card,
   .shop-heading,
-  .item-card,
-  .save-controls,
-  .audio-settings {
+    .item-card,
+    .save-controls,
+    .share-card-actions,
+    .audio-settings {
     align-items: flex-start;
     flex-direction: column;
   }

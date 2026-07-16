@@ -23,7 +23,7 @@ export const AppShell = ({ children }: Readonly<{ children: ReactNode }>): React
   const updateAudioSettings = useGameStore(({ updateAudioSettings }) => updateAudioSettings);
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${game?.settings.reducedMotion ? "reduced-motion" : ""}`}>
       <GameHydrator />
       <header className="topbar">
         <Link className="brand" href={game ? "/map" : "/"}>

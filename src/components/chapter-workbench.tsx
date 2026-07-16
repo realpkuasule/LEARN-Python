@@ -1,17 +1,22 @@
 "use client";
 
-import Editor from "@monaco-editor/react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import { BossEncounter } from "@/components/boss-encounter";
 import { EnvironmentBackdrop } from "@/components/environment-backdrop";
 import { PixelSprite } from "@/components/pixel-sprite";
+import { getBossDialogue } from "@/domain/boss-dialogues";
+import { getChapterHints } from "@/domain/chapter-hints";
+import { HINT_POTION_ID, getEquipment } from "@/domain/equipment";
 import { BOSS_COIN_BONUS, BOSS_EXP_BONUS, canAccessChapter } from "@/domain/game-state";
+import { inventoryQuantity } from "@/domain/inventory";
 import { submitExecution } from "@/lib/api-client";
 import { playSound } from "@/lib/audio-assets";
-import { chapterEnvironmentAsset } from "@/lib/environment-assets";
+import { chapterEnvironmentAsset, dragonBattleEnvironmentAsset, victoryCampEnvironmentAsset } from "@/lib/environment-assets";
 import { bossSpriteAsset } from "@/lib/game-art-assets";
 import type { ChapterDetail } from "@/server/chapter-service";
 import { useGameStore } from "@/store/game-store";
@@ -20,16 +25,24 @@ interface ChapterWorkbenchProperties {
   readonly chapter: ChapterDetail;
 }
 
+const Editor = dynamic(() => import("@monaco-editor/react"), {
+  loading: () => <div className="editor-loading" role="status">正在加载代码编辑器...</div>,
+  ssr: false,
+});
+
 export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React.ReactNode => {
   const [code, setCode] = useState(chapter.exercise.starterCode);
   const [stdin, setStdin] = useState("");
   const [state, setState] = useState<"idle" | "running" | "passed" | "failed">("idle");
   const [output, setOutput] = useState("尚未运行。写完代码后接受挑战吧。");
   const [testsPassed, setTestsPassed] = useState(0);
+  const [encounterComplete, setEncounterComplete] = useState(!chapter.isBoss);
+  const [mobilePanel, setMobilePanel] = useState<"course" | "code">("course");
   const game = useGameStore(({ game }) => game);
   const hydrated = useGameStore(({ hydrated }) => hydrated);
   const completeChapter = useGameStore(({ completeChapter }) => completeChapter);
   const recordAttempt = useGameStore(({ recordAttempt }) => recordAttempt);
+  const consumeHintPotion = useGameStore(({ consumeHintPotion }) => consumeHintPotion);
   const completed = game?.progress.completedChapters.includes(chapter.number) ?? false;
   const bossSprite = bossSpriteAsset(chapter.number);
   const hasHiddenBossTests = chapter.isBoss && chapter.exercise.testCount > 1;
@@ -38,6 +51,15 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const bossRewardExp = chapter.rewardExp + BOSS_EXP_BONUS;
   const bossRewardCoins = chapter.rewardCoins + BOSS_COIN_BONUS;
   const chapterAccessible = !game || canAccessChapter(game, chapter.number);
+  const hints = getChapterHints(chapter.number);
+  const revealedHintCount = game?.progress.hintsRevealed[chapter.exercise.id] ?? 0;
+  const hintPotionCount = game ? inventoryQuantity(game, HINT_POTION_ID) : 0;
+  const dropNames = (chapter.dropItemIds ?? []).map((itemId) => getEquipment(itemId)?.name).filter(Boolean);
+  const bossDialogue = chapter.isBoss ? getBossDialogue(chapter.number) : undefined;
+  const showBossEncounter = Boolean(hydrated && bossDialogue && chapterAccessible && !completed && !encounterComplete);
+  const sceneAsset = chapter.number === 17 && (encounterComplete || completed)
+    ? dragonBattleEnvironmentAsset()
+    : chapterEnvironmentAsset(chapter.number);
 
   const run = async (): Promise<void> => {
     if (!hydrated || !chapterAccessible) return;
@@ -61,15 +83,29 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
     }
   };
 
+  const revealHint = (): void => {
+    if (!game) return;
+    try {
+      consumeHintPotion(chapter.exercise.id);
+      playSound("chest-open", game.settings);
+    } catch (error) {
+      setOutput(error instanceof Error ? error.message : "提示暂时无法使用。");
+    }
+  };
+
   return (
-    <main className="chapter-layout" id="main-content">
+    <main className={`chapter-layout view-${mobilePanel}`} id="main-content">
+      <nav aria-label="章节移动端视图" className="chapter-mobile-tabs">
+        <button aria-pressed={mobilePanel === "course"} className="pixel-button secondary" onClick={() => setMobilePanel("course")} type="button">课程内容</button>
+        <button aria-pressed={mobilePanel === "code"} className="pixel-button secondary" onClick={() => setMobilePanel("code")} type="button">代码挑战</button>
+      </nav>
       <article className="course-scroll pixel-panel">
-        <div className="chapter-scene">
+        <div className={`chapter-scene ${chapter.isBoss ? `battle-${completed ? "passed" : state}` : ""}`}>
           <EnvironmentBackdrop
             alt={`第 ${chapter.number} 章地点：${chapter.location}`}
             priority
             sizes="(max-width: 1023px) calc(100vw - 52px), 42vw"
-            src={chapterEnvironmentAsset(chapter.number)}
+            src={sceneAsset}
           />
           {bossSprite && (
             <PixelSprite
@@ -120,6 +156,17 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
             <p>{displayedTestsPassed}/{chapter.exercise.testCount} 组隐藏测试已通过</p>
           </section>
         )}
+        {showBossEncounter && bossDialogue ? (
+          <BossEncounter
+            bossName={chapter.bossName ?? "Boss"}
+            dialogue={bossDialogue}
+            onComplete={() => {
+              setEncounterComplete(true);
+              if (game) playSound("ui-confirm", game.settings);
+            }}
+          />
+        ) : (
+          <>
         <p className="mission-copy">{chapter.exercise.instructions}</p>
         <div className="editor-frame" aria-label="Python 代码编辑器">
           <Editor
@@ -151,6 +198,26 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
           <h3>冒险日志</h3>
           <pre>{output}</pre>
         </section>
+        {(state === "failed" || revealedHintCount > 0) && (
+          <section className="hint-panel" aria-label="分级提示">
+            <div className="boss-status-heading">
+              <h3>提示药水</h3>
+              <span>背包 {hintPotionCount} · 已解锁 {revealedHintCount}/3</span>
+            </div>
+            {revealedHintCount > 0 && (
+              <ol>
+                {hints.slice(0, revealedHintCount).map((hint, index) => <li key={hint}>第 {index + 1} 级：{hint}</li>)}
+              </ol>
+            )}
+            {revealedHintCount < hints.length && (
+              game
+                ? hintPotionCount > 0
+                  ? <button className="pixel-button secondary mt-3" onClick={revealHint} type="button">使用 1 瓶并解锁下一级</button>
+                  : <Link className="pixel-button secondary mt-3" href="/shop">前往商店购买 · 1 金币</Link>
+                : <Link className="pixel-button secondary mt-3" href="/create-hero">创建勇者后使用提示</Link>
+            )}
+          </section>
+        )}
         {hasHiddenBossTests && (
           <section className={`boss-rewards ${completed ? "settled" : ""}`} aria-label="Boss 胜利奖励">
             <div className="boss-status-heading">
@@ -161,6 +228,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
               <span>EXP +{bossRewardExp}</span>
               <span>金币 +{bossRewardCoins}</span>
               {chapter.titleReward && <span>称号「{chapter.titleReward}」</span>}
+              {dropNames.map((name) => <span key={name}>首件掉落「{name}」</span>)}
             </div>
             <p>{completed
               ? "奖励只结算一次，下一章已经解锁。"
@@ -171,6 +239,19 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
         )}
         {hydrated && game && !chapterAccessible && <p className="status-error">请先完成上一章，再回来挑战这里。</p>}
         {hydrated && !game && <p className="status-error">当前没有勇者存档；代码仍可运行，但不会结算奖励。</p>}
+        {chapter.number === 17 && (completed || state === "passed") && (
+          <section className="final-victory pixel-panel" aria-label="最终通关画面">
+            <div className="final-victory-scene">
+              <EnvironmentBackdrop alt="击败恶龙后的胜利营地" sizes="(max-width: 1023px) calc(100vw - 52px), 58vw" src={victoryCampEnvironmentAsset()} />
+            </div>
+            <p className="eyebrow">17/17 · 冒险完成</p>
+            <h3>赤帝之子凯旋</h3>
+            <p>两千年前，刘邦斩白蛇，提三尺剑取天下。两千年后，{game?.hero.name ?? "勇者"}斩白帝之子，用 17 章 Python 征服代码世界。祖宗用剑，你用 print()。时代变了。</p>
+            <Link className="pixel-button mt-3" href="/hero">查看通关角色卡</Link>
+          </section>
+        )}
+          </>
+        )}
       </aside>
     </main>
   );

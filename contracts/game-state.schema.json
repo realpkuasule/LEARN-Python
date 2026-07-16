@@ -4,9 +4,9 @@
   "title": "Python DragonQuest Local Game State",
   "type": "object",
   "additionalProperties": false,
-  "required": ["version", "hero", "progress", "inventory", "settings"],
+  "required": ["version", "hero", "progress", "inventory", "achievements", "settings"],
   "properties": {
-    "version": { "const": 2 },
+    "version": { "const": 3 },
     "hero": {
       "type": "object",
       "additionalProperties": false,
@@ -30,7 +30,28 @@
             "def": { "type": "integer", "minimum": 0 }
           }
         },
-        "title": { "type": "string" },
+        "title": {
+          "type": "string",
+          "enum": [
+            "",
+            "初出茅庐",
+            "史莱姆克星",
+            "条件判断克星",
+            "循环克星",
+            "函数克星",
+            "数据结构大师",
+            "文件操作大师",
+            "错误处理大师",
+            "装备收藏家",
+            "提示药水品鉴师",
+            "所以你问的谁",
+            "速通达人",
+            "赤帝之子",
+            "资本家",
+            "这个称号有点难度",
+            "人工智能"
+          ]
+        },
         "equipment": {
           "type": "object",
           "additionalProperties": false,
@@ -49,7 +70,7 @@
     "progress": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["currentChapter", "completedChapters", "attempts"],
+      "required": ["currentChapter", "completedChapters", "attempts", "hintsRevealed"],
       "properties": {
         "currentChapter": { "type": "integer", "minimum": 1, "maximum": 17 },
         "completedChapters": {
@@ -60,11 +81,16 @@
         "attempts": {
           "type": "object",
           "additionalProperties": { "type": "integer", "minimum": 0 }
+        },
+        "hintsRevealed": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 3 }
         }
       }
     },
     "inventory": {
       "type": "array",
+      "maxItems": 20,
       "items": {
         "type": "object",
         "additionalProperties": false,
@@ -73,6 +99,39 @@
           "itemId": { "type": "string", "minLength": 1 },
           "quantity": { "type": "integer", "minimum": 1 }
         }
+      }
+    },
+    "achievements": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["unlockedTitles", "aiRequests"],
+      "properties": {
+        "unlockedTitles": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "初出茅庐",
+              "史莱姆克星",
+              "条件判断克星",
+              "循环克星",
+              "函数克星",
+              "数据结构大师",
+              "文件操作大师",
+              "错误处理大师",
+              "装备收藏家",
+              "提示药水品鉴师",
+              "所以你问的谁",
+              "速通达人",
+              "赤帝之子",
+              "资本家",
+              "这个称号有点难度",
+              "人工智能"
+            ]
+          }
+        },
+        "aiRequests": { "type": "integer", "minimum": 0 }
       }
     },
     "settings": {

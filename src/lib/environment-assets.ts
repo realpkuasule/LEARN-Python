@@ -23,6 +23,8 @@ const CHAPTER_SCENE_IDS = [
 const environmentAsset = (sceneId: string): string => `${ENVIRONMENT_ROOT}/${sceneId}.png`;
 
 export const worldMapEnvironmentAsset = (): string => environmentAsset("world-map");
+export const dragonBattleEnvironmentAsset = (): string => environmentAsset("dragon-battle-arena");
+export const victoryCampEnvironmentAsset = (): string => environmentAsset("victory-camp");
 
 export const chapterEnvironmentAsset = (chapterNumber: number): string => {
   const sceneId = Number.isInteger(chapterNumber) ? CHAPTER_SCENE_IDS[chapterNumber - 1] : undefined;
