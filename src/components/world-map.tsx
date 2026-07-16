@@ -105,6 +105,11 @@ export const WorldMap = (): React.ReactNode => {
       <dialog
         aria-labelledby="quest-dialog-title"
         className="quest-dialog"
+        onKeyDown={(event) => {
+          if (event.key !== "Escape") return;
+          event.preventDefault();
+          event.currentTarget.close();
+        }}
         onClose={() => setSelectedChapter(null)}
         ref={dialogReference}
       >
