@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { PixelAvatar } from "@/components/pixel-avatar";
+import { PixelIcon } from "@/components/pixel-icon";
 import { SaveControls } from "@/components/save-controls";
 import { getEffectiveStats, getEquipment, type EquipmentSlot } from "@/domain/equipment";
+import { equipmentSlotAsset } from "@/lib/gui-assets";
 import { useGameStore } from "@/store/game-store";
 
 const SLOT_LABELS: Readonly<Record<EquipmentSlot, string>> = {
@@ -70,7 +72,7 @@ export const HeroDashboard = (): React.ReactNode => {
             {Object.entries(game.hero.equipment).map(([slot, itemId]) => (
               <div key={slot}>
                 <dt>{SLOT_LABELS[slot as EquipmentSlot]}</dt>
-                <dd>{itemId ? getEquipment(itemId)?.name : "—"}</dd>
+                <dd>{itemId ? getEquipment(itemId)?.name : "未装备"}</dd>
               </div>
             ))}
           </dl>
@@ -92,7 +94,9 @@ export const HeroDashboard = (): React.ReactNode => {
             const equipped = game.hero.equipment[item.slot] === item.id;
             return (
               <li className="item-card" key={item.id}>
-                <span aria-hidden="true" className="item-icon">{item.slot.slice(0, 1).toUpperCase()}</span>
+                <span aria-hidden="true" className="item-icon">
+                  <PixelIcon src={equipmentSlotAsset(item.slot)} />
+                </span>
                 <div className="min-w-0 flex-1">
                   <h3>{item.name}</h3>
                   <p className="muted">{item.description}</p>

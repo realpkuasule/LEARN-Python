@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { PixelIcon } from "@/components/pixel-icon";
 import { EQUIPMENT } from "@/domain/equipment";
+import { equipmentSlotAsset } from "@/lib/gui-assets";
 import { useGameStore } from "@/store/game-store";
 
 const describeStats = (stats: Readonly<Record<string, number | undefined>>): string => (
@@ -53,7 +55,9 @@ export const EquipmentShop = (): React.ReactNode => {
           const affordable = game.hero.coins >= item.price;
           return (
             <li className={`shop-item pixel-panel ${locked ? "locked" : ""}`} key={item.id}>
-              <span aria-hidden="true" className="shop-sprite">{item.slot.slice(0, 1).toUpperCase()}</span>
+              <span aria-hidden="true" className="shop-sprite">
+                <PixelIcon src={equipmentSlotAsset(item.slot)} />
+              </span>
               <p className="eyebrow">{item.slot} · 第 {item.unlockChapter} 章</p>
               <h2>{item.name}</h2>
               <p className="muted min-h-12">{item.description}</p>
