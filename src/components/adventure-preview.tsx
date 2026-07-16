@@ -1,6 +1,8 @@
 import type { ChapterViewState } from "@/domain/map-view";
+import { worldMapEnvironmentAsset } from "@/lib/environment-assets";
 import { chapterNodeAsset, guiAsset } from "@/lib/gui-assets";
 
+import { EnvironmentBackdrop } from "./environment-backdrop";
 import { PixelIcon } from "./pixel-icon";
 
 const PREVIEW_ICON_SIZE = 56;
@@ -17,6 +19,7 @@ const PREVIEW_NODES: readonly {
 
 export const AdventurePreview = (): React.ReactNode => (
   <section aria-label="世界地图与任务卡预览" className="adventure-preview pixel-panel">
+    <EnvironmentBackdrop priority sizes="(max-width: 1023px) 100vw, 46vw" src={worldMapEnvironmentAsset()} />
     <header className="adventure-preview-heading">
       <div>
         <p className="eyebrow">启程之地</p>

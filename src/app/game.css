@@ -4,11 +4,63 @@
   object-fit: contain;
 }
 
+.environment-backdrop,
+.environment-scrim {
+  position: absolute;
+  inset: 0;
+}
+
+.environment-backdrop {
+  z-index: 0;
+  object-fit: cover;
+  image-rendering: pixelated;
+}
+
+.environment-scrim {
+  z-index: 1;
+  background: linear-gradient(to bottom, rgb(7 16 29 / 8%), rgb(7 16 29 / 48%));
+}
+
 .adventure-preview {
   position: relative;
   min-height: 420px;
   overflow: hidden;
   padding: 24px;
+}
+
+.adventure-preview > :not(.environment-backdrop, .environment-scrim) {
+  position: relative;
+  z-index: 2;
+}
+
+.adventure-preview .environment-scrim {
+  background: linear-gradient(to bottom, rgb(7 16 29 / 56%), rgb(7 16 29 / 92%));
+}
+
+.world-map-hero {
+  position: relative;
+  width: min(100%, 1120px);
+  aspect-ratio: 16 / 9;
+  margin: 0 auto 32px;
+  overflow: hidden;
+}
+
+.world-map-hero .environment-backdrop {
+  object-fit: contain;
+}
+
+.world-map-hero .environment-scrim {
+  background: linear-gradient(to bottom, transparent 58%, rgb(7 16 29 / 84%));
+}
+
+.world-map-hero figcaption {
+  position: absolute;
+  z-index: 2;
+  right: 20px;
+  bottom: 16px;
+  left: 20px;
+  color: var(--text);
+  text-shadow: 2px 2px 0 var(--border-dark);
 }
 
 .adventure-preview-heading,
@@ -255,6 +307,14 @@ button.map-node-card:hover {
   padding: 24px;
 }
 
+.quest-scene {
+  position: relative;
+  aspect-ratio: 16 / 7;
+  border-bottom: 4px solid var(--border-dark);
+  margin: -24px -24px 24px;
+  overflow: hidden;
+}
+
 .quest-rewards {
   border: 3px solid var(--border-dark);
   background: var(--canvas);
@@ -290,6 +350,10 @@ button.map-node-card:hover {
 
   .quest-dialog-card {
     padding: 18px;
+  }
+
+  .quest-scene {
+    margin: -18px -18px 18px;
   }
 }
 

@@ -6,8 +6,11 @@ import { useEffect, useRef, useState } from "react";
 import { PixelIcon } from "@/components/pixel-icon";
 import { CHAPTERS, type Chapter } from "@/domain/chapter-catalog";
 import { getChapterViewState, type ChapterViewState } from "@/domain/map-view";
+import { chapterEnvironmentAsset } from "@/lib/environment-assets";
 import { chapterNodeAsset, guiAsset } from "@/lib/gui-assets";
 import { useGameStore } from "@/store/game-store";
+
+import { EnvironmentBackdrop } from "./environment-backdrop";
 
 const MAP_NODE_ICON_SIZE = 64;
 const DIALOG_ICON_SIZE = 40;
@@ -60,7 +63,6 @@ export const WorldMap = (): React.ReactNode => {
           key={region}
           style={{ backgroundColor: REGION_COLORS[region] ?? "var(--surface)" }}
         >
-          <div aria-hidden="true" className="absolute inset-0 opacity-15" style={{ backgroundImage: "linear-gradient(90deg, #fff 2px, transparent 2px), linear-gradient(#fff 2px, transparent 2px)", backgroundSize: "32px 32px" }} />
           <h2 className="relative mb-6 text-2xl text-ink">{region}</h2>
           <ol className="relative grid gap-4 md:grid-cols-2 xl:grid-cols-4">
             {CHAPTERS.filter((chapter) => chapter.region === region).map((chapter) => {
@@ -115,6 +117,13 @@ export const WorldMap = (): React.ReactNode => {
       >
         {selectedChapter && (
           <article className="quest-dialog-card pixel-panel">
+            <div className="quest-scene">
+              <EnvironmentBackdrop
+                alt={`${selectedChapter.location}的章节场景`}
+                sizes="(max-width: 560px) calc(100vw - 32px), 560px"
+                src={chapterEnvironmentAsset(selectedChapter.number)}
+              />
+            </div>
             <header className="quest-dialog-heading">
               <PixelIcon
                 size={DIALOG_ICON_SIZE}

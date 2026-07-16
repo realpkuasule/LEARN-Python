@@ -6,7 +6,9 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
+import { EnvironmentBackdrop } from "@/components/environment-backdrop";
 import { submitExecution } from "@/lib/api-client";
+import { chapterEnvironmentAsset } from "@/lib/environment-assets";
 import type { ChapterDetail } from "@/server/chapter-service";
 import { useGameStore } from "@/store/game-store";
 
@@ -43,6 +45,13 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   return (
     <main className="chapter-layout" id="main-content">
       <article className="course-scroll pixel-panel">
+        <div className="chapter-scene">
+          <EnvironmentBackdrop
+            alt={`第 ${chapter.number} 章地点：${chapter.location}`}
+            sizes="(max-width: 1023px) calc(100vw - 52px), 42vw"
+            src={chapterEnvironmentAsset(chapter.number)}
+          />
+        </div>
         <header className="chapter-heading">
           <div>
             <p className="eyebrow">第 {chapter.number} 章 · {chapter.location}</p>
