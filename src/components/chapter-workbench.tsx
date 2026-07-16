@@ -7,8 +7,10 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import { EnvironmentBackdrop } from "@/components/environment-backdrop";
+import { PixelSprite } from "@/components/pixel-sprite";
 import { submitExecution } from "@/lib/api-client";
 import { chapterEnvironmentAsset } from "@/lib/environment-assets";
+import { bossSpriteAsset } from "@/lib/game-art-assets";
 import type { ChapterDetail } from "@/server/chapter-service";
 import { useGameStore } from "@/store/game-store";
 
@@ -25,6 +27,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const completeChapter = useGameStore(({ completeChapter }) => completeChapter);
   const recordAttempt = useGameStore(({ recordAttempt }) => recordAttempt);
   const completed = game?.progress.completedChapters.includes(chapter.number) ?? false;
+  const bossSprite = bossSpriteAsset(chapter.number);
 
   const run = async (): Promise<void> => {
     setState("running");
@@ -48,9 +51,18 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
         <div className="chapter-scene">
           <EnvironmentBackdrop
             alt={`第 ${chapter.number} 章地点：${chapter.location}`}
+            priority
             sizes="(max-width: 1023px) calc(100vw - 52px), 42vw"
             src={chapterEnvironmentAsset(chapter.number)}
           />
+          {bossSprite && (
+            <PixelSprite
+              alt={`第 ${chapter.number} 章 Boss 像素立绘`}
+              className="chapter-boss-sprite"
+              size={192}
+              sprite={bossSprite}
+            />
+          )}
         </div>
         <header className="chapter-heading">
           <div>

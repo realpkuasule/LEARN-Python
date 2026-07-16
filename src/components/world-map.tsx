@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-import { PixelIcon } from "@/components/pixel-icon";
+import { PixelSprite } from "@/components/pixel-sprite";
 import { CHAPTERS, type Chapter } from "@/domain/chapter-catalog";
 import { getChapterViewState, type ChapterViewState } from "@/domain/map-view";
 import { chapterEnvironmentAsset } from "@/lib/environment-assets";
-import { chapterNodeAsset, guiAsset } from "@/lib/gui-assets";
+import { bossSpriteAsset, chapterNodeSpriteAsset, guiSpriteAsset } from "@/lib/game-art-assets";
 import { useGameStore } from "@/store/game-store";
 
 import { EnvironmentBackdrop } from "./environment-backdrop";
@@ -55,6 +55,7 @@ export const WorldMap = (): React.ReactNode => {
   }
 
   const regions = [...new Set(CHAPTERS.map(({ region }) => region))];
+  const selectedBoss = selectedChapter ? bossSpriteAsset(selectedChapter.number) : undefined;
   return (
     <div className="space-y-8">
       {regions.map((region) => (
@@ -72,7 +73,7 @@ export const WorldMap = (): React.ReactNode => {
               const content = (
                 <>
                   <div className="map-node-summary">
-                    <PixelIcon size={MAP_NODE_ICON_SIZE} src={chapterNodeAsset(state)} />
+                    <PixelSprite size={MAP_NODE_ICON_SIZE} sprite={chapterNodeSpriteAsset(state)} />
                     <div className="min-w-0 flex-1">
                       <div className="flex items-start justify-between gap-3">
                         <span className="text-accent">第 {chapter.number} 章</span>
@@ -123,11 +124,19 @@ export const WorldMap = (): React.ReactNode => {
                 sizes="(max-width: 560px) calc(100vw - 32px), 560px"
                 src={chapterEnvironmentAsset(selectedChapter.number)}
               />
+              {selectedBoss && (
+                <PixelSprite
+                  alt={`${selectedChapter.bossName} 像素立绘`}
+                  className="quest-boss-sprite"
+                  size={168}
+                  sprite={selectedBoss}
+                />
+              )}
             </div>
             <header className="quest-dialog-heading">
-              <PixelIcon
+              <PixelSprite
                 size={DIALOG_ICON_SIZE}
-                src={guiAsset(selectedChapter.isBoss ? "icon-dragon" : "icon-quest")}
+                sprite={guiSpriteAsset(selectedChapter.isBoss ? "dragon" : "quest")}
               />
               <div>
                 <p className="eyebrow">第 {selectedChapter.number} 章 · {selectedChapter.region}</p>
@@ -138,7 +147,7 @@ export const WorldMap = (): React.ReactNode => {
             <p className="mt-3">挑战：{selectedChapter.exercise.instructions}</p>
             {selectedChapter.isBoss && <p className="status-error mt-3">Boss：{selectedChapter.bossName}</p>}
             <div className="quest-rewards mt-5">
-              <PixelIcon size={DIALOG_ICON_SIZE} src={guiAsset("icon-coin")} />
+              <PixelSprite size={DIALOG_ICON_SIZE} sprite={guiSpriteAsset("coin")} />
               <span>基础奖励：{selectedChapter.rewardExp} EXP · {selectedChapter.rewardCoins} 金币</span>
             </div>
             <div className="mt-6 flex flex-wrap justify-end gap-3">

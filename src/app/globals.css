@@ -164,12 +164,8 @@ input {
 }
 
 .brand-mark {
-  display: grid;
-  width: 28px;
-  height: 28px;
-  place-items: center;
-  border: 3px solid var(--accent);
-  background: var(--canvas);
+  width: 32px;
+  height: 32px;
 }
 
 .main-nav,
@@ -224,10 +220,8 @@ input {
 }
 
 .avatar-pixels {
-  display: grid;
-  width: 64px;
-  height: 64px;
-  grid-template-columns: repeat(8, 1fr);
+  width: 96px;
+  height: 96px;
   border: 3px solid var(--border-dark);
   background: var(--canvas);
   image-rendering: pixelated;
@@ -236,10 +230,6 @@ input {
 .avatar-pixels.compact {
   width: 36px;
   height: 36px;
-}
-
-.avatar-pixel {
-  background: var(--pixel-color, transparent);
 }
 
 .course-prose {

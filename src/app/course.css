@@ -21,6 +21,11 @@
   overflow: hidden;
 }
 
+.chapter-boss-sprite {
+  width: min(192px, 42%);
+  height: auto;
+}
+
 .chapter-heading,
 .mission-heading {
   display: flex;

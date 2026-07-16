@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
 import { PixelAvatar } from "@/components/pixel-avatar";
+import { PixelSprite } from "@/components/pixel-sprite";
+import { guiSpriteAsset } from "@/lib/game-art-assets";
 import { GameHydrator, useGameStore } from "@/store/game-store";
 
 const NAVIGATION = [
@@ -23,7 +25,7 @@ export const AppShell = ({ children }: Readonly<{ children: ReactNode }>): React
       <GameHydrator />
       <header className="topbar">
         <Link className="brand" href={game ? "/map" : "/"}>
-          <span aria-hidden="true" className="brand-mark">P</span>
+          <PixelSprite className="brand-mark" size={32} sprite={guiSpriteAsset("python-rune")} />
           <span>Python 勇者斗恶龙</span>
         </Link>
         <nav aria-label="主导航" className="main-nav">

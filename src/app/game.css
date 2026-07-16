@@ -4,6 +4,16 @@
   object-fit: contain;
 }
 
+.pixel-sprite {
+  display: block;
+  flex: none;
+  overflow: hidden;
+}
+
+.pixel-sprite image {
+  image-rendering: pixelated;
+}
+
 .environment-backdrop,
 .environment-scrim {
   position: absolute;
@@ -112,8 +122,8 @@
   color: var(--accent);
 }
 
-.preview-node.current img,
-.map-node-card.current .pixel-art {
+.preview-node.current .pixel-sprite,
+.map-node-card.current .pixel-sprite {
   animation: current-node-pulse 1.4s steps(2, end) infinite;
 }
 
@@ -193,14 +203,17 @@
 .shop-sprite {
   display: grid;
   flex: none;
-  width: 48px;
-  height: 48px;
   place-items: center;
   border: 3px solid var(--border-dark);
   background: var(--accent);
   color: var(--border-dark);
   box-shadow: inset -5px -5px 0 var(--accent-pressed);
   overflow: hidden;
+}
+
+.item-icon {
+  width: 60px;
+  height: 60px;
 }
 
 .shop-heading {
@@ -230,8 +243,8 @@
 }
 
 .shop-item .shop-sprite {
-  width: 64px;
-  height: 64px;
+  width: 80px;
+  height: 80px;
   margin-bottom: 16px;
   font-size: 1.5rem;
 }
@@ -315,6 +328,15 @@ button.map-node-card:hover {
   overflow: hidden;
 }
 
+.quest-boss-sprite,
+.chapter-boss-sprite {
+  position: absolute;
+  z-index: 2;
+  right: 4%;
+  bottom: -16px;
+  filter: drop-shadow(4px 5px 0 rgb(7 16 29 / 72%));
+}
+
 .quest-rewards {
   border: 3px solid var(--border-dark);
   background: var(--canvas);
@@ -358,8 +380,8 @@ button.map-node-card:hover {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .preview-node.current img,
-  .map-node-card.current .pixel-art {
+  .preview-node.current .pixel-sprite,
+  .map-node-card.current .pixel-sprite {
     animation: none;
   }
 }

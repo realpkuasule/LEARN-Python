@@ -1,9 +1,9 @@
 import type { ChapterViewState } from "@/domain/map-view";
 import { worldMapEnvironmentAsset } from "@/lib/environment-assets";
-import { chapterNodeAsset, guiAsset } from "@/lib/gui-assets";
+import { chapterNodeSpriteAsset, guiSpriteAsset } from "@/lib/game-art-assets";
 
 import { EnvironmentBackdrop } from "./environment-backdrop";
-import { PixelIcon } from "./pixel-icon";
+import { PixelSprite } from "./pixel-sprite";
 
 const PREVIEW_ICON_SIZE = 56;
 
@@ -25,13 +25,13 @@ export const AdventurePreview = (): React.ReactNode => (
         <p className="eyebrow">启程之地</p>
         <h2>从第一章出发</h2>
       </div>
-      <PixelIcon src={guiAsset("icon-python-rune")} />
+      <PixelSprite sprite={guiSpriteAsset("python-rune")} />
     </header>
 
     <ol aria-label="章节路线预览" className="preview-route">
       {PREVIEW_NODES.map(({ chapter, label, state }) => (
         <li className={`preview-node ${state}`} key={chapter}>
-          <PixelIcon size={PREVIEW_ICON_SIZE} src={chapterNodeAsset(state)} />
+          <PixelSprite size={PREVIEW_ICON_SIZE} sprite={chapterNodeSpriteAsset(state)} />
           <span>第 {chapter} 章</span>
           <small>{label}</small>
         </li>
@@ -39,7 +39,7 @@ export const AdventurePreview = (): React.ReactNode => (
     </ol>
 
     <article className="preview-quest pixel-panel">
-      <PixelIcon src={guiAsset("icon-quest")} />
+      <PixelSprite sprite={guiSpriteAsset("quest")} />
       <div>
         <p className="text-accent">当前任务</p>
         <h3>写下冒险宣言</h3>

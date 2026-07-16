@@ -4,10 +4,10 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { PixelAvatar } from "@/components/pixel-avatar";
-import { PixelIcon } from "@/components/pixel-icon";
+import { PixelSprite } from "@/components/pixel-sprite";
 import { SaveControls } from "@/components/save-controls";
 import { getEffectiveStats, getEquipment, type EquipmentSlot } from "@/domain/equipment";
-import { equipmentSlotAsset } from "@/lib/gui-assets";
+import { itemSpriteAsset } from "@/lib/game-art-assets";
 import { useGameStore } from "@/store/game-store";
 
 const SLOT_LABELS: Readonly<Record<EquipmentSlot, string>> = {
@@ -95,7 +95,7 @@ export const HeroDashboard = (): React.ReactNode => {
             return (
               <li className="item-card" key={item.id}>
                 <span aria-hidden="true" className="item-icon">
-                  <PixelIcon src={equipmentSlotAsset(item.slot)} />
+                  <PixelSprite size={52} sprite={itemSpriteAsset(item.id)} />
                 </span>
                 <div className="min-w-0 flex-1">
                   <h3>{item.name}</h3>

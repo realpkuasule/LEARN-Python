@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useState } from "react";
 
-import { PixelIcon } from "@/components/pixel-icon";
+import { PixelSprite } from "@/components/pixel-sprite";
 import { EQUIPMENT } from "@/domain/equipment";
-import { equipmentSlotAsset } from "@/lib/gui-assets";
+import { itemSpriteAsset } from "@/lib/game-art-assets";
 import { useGameStore } from "@/store/game-store";
 
 const describeStats = (stats: Readonly<Record<string, number | undefined>>): string => (
@@ -56,7 +56,7 @@ export const EquipmentShop = (): React.ReactNode => {
           return (
             <li className={`shop-item pixel-panel ${locked ? "locked" : ""}`} key={item.id}>
               <span aria-hidden="true" className="shop-sprite">
-                <PixelIcon src={equipmentSlotAsset(item.slot)} />
+                <PixelSprite size={72} sprite={itemSpriteAsset(item.id)} />
               </span>
               <p className="eyebrow">{item.slot} · 第 {item.unlockChapter} 章</p>
               <h2>{item.name}</h2>
