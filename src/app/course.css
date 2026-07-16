@@ -1,0 +1,102 @@
+.chapter-layout {
+  display: grid;
+  min-height: calc(100dvh - 56px);
+  grid-template-columns: minmax(0, 42fr) minmax(440px, 58fr);
+  gap: 16px;
+  padding: 16px;
+}
+
+.course-scroll,
+.mission-scroll {
+  max-height: calc(100dvh - 88px);
+  overflow: auto;
+  padding: 24px;
+}
+
+.chapter-heading,
+.mission-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+  border-bottom: 3px solid var(--border-dark);
+  margin-bottom: 24px;
+  padding-bottom: 18px;
+}
+
+.chapter-heading h1,
+.mission-heading h2 {
+  margin: 6px 0 0;
+  color: var(--text);
+}
+
+.mission-copy {
+  min-height: 54px;
+  color: var(--text-muted);
+  font-family: "Noto Sans SC", "PingFang SC", sans-serif;
+}
+
+.editor-frame {
+  overflow: hidden;
+  border: 4px solid var(--border-dark);
+  box-shadow: inset 0 0 0 2px var(--border-light);
+  margin: 18px 0;
+}
+
+.result-panel {
+  border: 3px solid var(--border-dark);
+  background: var(--canvas);
+  margin-top: 18px;
+  padding: 14px;
+}
+
+.result-panel.passed {
+  border-color: var(--success);
+}
+
+.result-panel.failed {
+  border-color: var(--error);
+}
+
+.result-panel h3 {
+  margin: 0 0 10px;
+  color: var(--accent);
+}
+
+.result-panel pre {
+  overflow: auto;
+  margin: 0;
+  color: var(--text-muted);
+  font: 14px/1.6 "SFMono-Regular", Consolas, monospace;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 1023px) {
+  .chapter-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .course-scroll,
+  .mission-scroll {
+    max-height: none;
+  }
+}
+
+@media (max-width: 639px) {
+  .chapter-layout {
+    padding: 10px;
+  }
+
+  .course-scroll,
+  .mission-scroll {
+    padding: 16px;
+  }
+
+  .chapter-heading {
+    display: block;
+  }
+
+  .chapter-heading .pixel-button {
+    margin-top: 16px;
+  }
+}

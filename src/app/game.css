@@ -1,0 +1,301 @@
+.pixel-art {
+  display: block;
+  image-rendering: pixelated;
+  object-fit: contain;
+}
+
+.adventure-preview {
+  position: relative;
+  min-height: 420px;
+  overflow: hidden;
+  padding: 24px;
+}
+
+.adventure-preview-heading,
+.quest-dialog-heading,
+.quest-rewards {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.adventure-preview-heading {
+  justify-content: space-between;
+}
+
+.adventure-preview-heading h2,
+.preview-quest h3,
+.quest-dialog-heading h2 {
+  margin: 4px 0 0;
+}
+
+.preview-route {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 42px 0;
+}
+
+.preview-route::before {
+  position: absolute;
+  top: 28px;
+  right: 12%;
+  left: 12%;
+  height: 4px;
+  background: var(--accent-pressed);
+  content: "";
+}
+
+.preview-node {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  justify-items: center;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.preview-node.current {
+  color: var(--accent);
+}
+
+.preview-node.current img,
+.map-node-card.current .pixel-art {
+  animation: current-node-pulse 1.4s steps(2, end) infinite;
+}
+
+.preview-node small {
+  margin-top: 2px;
+}
+
+.preview-quest {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+}
+
+@keyframes current-node-pulse {
+  50% {
+    filter: brightness(1.24);
+    transform: translateY(-2px);
+  }
+}
+
+.hero-card,
+.shop-heading {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+}
+
+.hero-card h1,
+.shop-heading h1 {
+  margin: 4px 0;
+  font-size: clamp(2rem, 5vw, 3.25rem);
+}
+
+.stat-grid,
+.equipment-slots {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.stat-grid div,
+.equipment-slots div {
+  border: 3px solid var(--border-dark);
+  background: var(--canvas);
+  padding: 12px;
+}
+
+.stat-grid dt,
+.equipment-slots dt {
+  color: var(--text-muted);
+}
+
+.stat-grid dd,
+.equipment-slots dd {
+  margin: 4px 0 0;
+  color: var(--accent);
+  font-size: 1.4rem;
+}
+
+.item-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.item-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 3px solid var(--border-dark);
+  background: var(--surface-raised);
+  padding: 14px;
+}
+
+.item-icon,
+.shop-sprite {
+  display: grid;
+  flex: none;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border: 3px solid var(--border-dark);
+  background: var(--accent);
+  color: var(--border-dark);
+  box-shadow: inset -5px -5px 0 var(--accent-pressed);
+  overflow: hidden;
+}
+
+.shop-heading {
+  justify-content: space-between;
+}
+
+.coin-purse {
+  border: 3px solid var(--border-dark);
+  background: var(--canvas);
+  padding: 14px 18px;
+  white-space: nowrap;
+}
+
+.coin-purse strong {
+  color: var(--accent);
+  font-size: 1.5rem;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 18px;
+}
+
+.shop-item {
+  padding: 20px;
+}
+
+.shop-item .shop-sprite {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 16px;
+  font-size: 1.5rem;
+}
+
+.shop-item h2 {
+  margin: 8px 0;
+  font-size: 1.5rem;
+}
+
+.shop-item.locked {
+  filter: grayscale(0.75);
+  opacity: 0.72;
+}
+
+.save-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 20px;
+}
+
+.map-node-card {
+  width: 100%;
+  min-height: 144px;
+  padding: 16px;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+button.map-node-card {
+  cursor: pointer;
+}
+
+button.map-node-card:hover {
+  background: var(--surface-raised);
+}
+
+.map-node-card.current {
+  border-color: var(--accent);
+}
+
+.map-node-card.completed {
+  border-color: var(--success);
+}
+
+.map-node-card.locked {
+  filter: grayscale(0.75);
+  opacity: 0.64;
+}
+
+.map-node-summary {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.quest-dialog {
+  width: min(560px, calc(100% - 32px));
+  max-width: none;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  padding: 0;
+}
+
+.quest-dialog::backdrop {
+  background: rgb(7 16 29 / 82%);
+}
+
+.quest-dialog-card {
+  padding: 24px;
+}
+
+.quest-rewards {
+  border: 3px solid var(--border-dark);
+  background: var(--canvas);
+  padding: 10px 12px;
+}
+
+@media (max-width: 639px) {
+  .adventure-preview {
+    min-height: 0;
+    padding: 16px;
+  }
+
+  .preview-route {
+    margin: 28px 0;
+  }
+
+  .hero-card,
+  .shop-heading,
+  .item-card,
+  .save-controls {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .stat-grid,
+  .equipment-slots {
+    grid-template-columns: 1fr;
+  }
+
+  .map-node-summary {
+    align-items: flex-start;
+  }
+
+  .quest-dialog-card {
+    padding: 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preview-node.current img,
+  .map-node-card.current .pixel-art {
+    animation: none;
+  }
+}

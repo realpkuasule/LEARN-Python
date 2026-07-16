@@ -1,0 +1,9 @@
+const DEFAULT_EXECUTION_SERVICE_URL = "http://127.0.0.1:8787";
+const DEFAULT_EXECUTION_HOST = "127.0.0.1";
+const DEFAULT_EXECUTION_PORT = 8787;
+
+export const env = {
+  executionServiceUrl: process.env.EXECUTION_SERVICE_URL ?? DEFAULT_EXECUTION_SERVICE_URL,
+  executionHost: process.env.EXECUTION_HOST ?? DEFAULT_EXECUTION_HOST,
+  executionPort: Number(process.env.EXECUTION_PORT ?? DEFAULT_EXECUTION_PORT),
+} as const;

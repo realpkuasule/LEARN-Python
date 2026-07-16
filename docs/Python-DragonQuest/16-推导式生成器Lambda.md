@@ -1,4 +1,4 @@
-# 第十六课：推导式/Lambda
+# 第十六课：推导式、生成器与 Lambda
 
 ---
 
@@ -139,31 +139,30 @@ print(fire_weak)  # → {"史莱姆", "冰龙", "树精"}  火系法师狂喜
 2GB 的文件，一次全读进来，电脑根本扛不住。这时候该 `yield` 出场了：
 
 ```python
+import re
+
 def read_battle_log(filename):
     """读取超长战斗日志——一行一行处理，不占内存"""
-    import re
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         for line in f:
             if "伤害" in line:
                 yield line.strip()
 
 # 处理十万行战斗日志，内存只占一行的大小
-import re
 total_damage = 0
 for line in read_battle_log("epic_battle.log"):
-    damage = int(re.search(r"造成(\d+)点伤害", line).group(1))
-    total_damage += damage
+    match = re.search(r"造成\s*(\d+)\s*点伤害", line)
+    if match is not None:
+        total_damage += int(match.group(1))
 print(f"这场战斗总共造成了 {total_damage} 点伤害！")
 ```
 
 **逐行解读**：
 
-- 第 3 行：函数内部 `import re`——生成器函数内需要正则时，在内部导入是允许的。
-- 第 4-7 行：`with open` 逐行读取文件。`for line in f` 每次只读一行进内存，读完就丢弃。
-- 第 6-7 行：如果这一行包含「伤害」两个字，就用 `yield` 把它「吐」出来。`yield` 不会结束函数——函数暂停在这里，等你下次再要下一行。
-- 第 10 行：**函数外部也需要 `import re`**——因为外面的代码也要用 `re.search` 提取数字。
-- 第 11-13 行：`for line in read_battle_log(...)`——每循环一次，生成器就「吐」一行。内存里始终只存当前这一行。
-- 第 12 行：`re.search(r"造成(\d+)点伤害", line).group(1)`——从这行文字里提取伤害数字。
+- 第 1 行：只导入一次 `re`，后面的日志解析共用这个模块。
+- 第 5-8 行：`with open(..., encoding="utf-8")` 按项目统一编码逐行读取文件。`for line in f` 每次只读一行进内存，读完就丢弃。
+- 第 7-8 行：如果这一行包含「伤害」两个字，就用 `yield` 把它「吐」出来。`yield` 不会结束函数——函数暂停在这里，等你下次再要下一行。
+- 第 12-15 行：每拿到一行，就用 `re.search` 查找符合格式的伤害数字；先判断 `match is not None`，避免日志里只有「伤害」字样却没有数字时调用 `.group()` 报错。
 
 #### 关键区别：return vs yield
 
@@ -232,15 +231,17 @@ print(half_price)
 
 当你写了一个 for 循环筛选数据，想让 AI 帮你压缩成一行推导式：
 
-> **Prompt 示例**：「帮我把下面这段 Python 代码改成列表推导式。保留完全相同的逻辑——筛选条件是用 or 连接的三个 endswith，不要用 any()：```python
+> **Prompt 示例**：「帮我把下面这段 Python 代码改成列表推导式。保留完全相同的逻辑——筛选条件是用 `or` 连接的三个 `endswith`，不要用 `any()`：
+>
+> ```python
 > backpack = ["铁剑", "回复药", "钢盾", "解毒草", "魔法杖", "魔力药"]
 > weapons = []
 > for item in backpack:
-
-if item.endswith("剑") or item.endswith("盾") or item.endswith("杖"):
-weapons.append(item)
-
-````」
+>     if item.endswith("剑") or item.endswith("盾") or item.endswith("杖"):
+>         weapons.append(item)
+> ```
+>
+> 请在转换后解释推导式的每个部分分别对应原循环的哪一部分。」
 
 AI 会帮你精确转换为推导式。你也可以在这个 Prompt 后面加一句「再帮我写一段注释解释推导式每个部分分别对应 for 循环的哪一部分」，让 AI 同时给出教学解释。
 
@@ -261,7 +262,7 @@ AI 会帮你精确转换为推导式。你也可以在这个 Prompt 后面加一
 ```python
 backpack = ["铁剑", "回复药", "钢盾", "解毒草", "魔法杖", "魔力药", "完全回复药", "凤凰羽"]
 # 你的推导式写在这里
-````
+```
 
 要求：筛选条件用 `endswith("药")`，不要用 `any()`。
 

@@ -1,6 +1,8 @@
 # 讲 Python（全知识点·勇者斗恶龙版）
 
-> 这本书从头到尾只做一件事——用 Python 做一个文字 RPG 游戏。
+> **文档状态**：这是课程的早期合并总览稿，便于快速浏览概念，不是发布源，也不代表当前功能已经实现。课程顺序与状态看 `README.md`，产品数值与范围看 `PRD-Python-DragonQuest.md`，正式教学内容看 `01`—`17` 分章文件。
+>
+> 这份总览从头到尾围绕一件事展开——用 Python 逐步设计一个文字 RPG 游戏。
 > 你创建勇者、探索世界、遭遇怪物、战斗升级、存档读档。
 > 学完 17 课，你收获的不只是一个能跑的游戏，更是「用编程思维看世界」的能力。
 > Python 只是举例，换成 JavaScript/Go/Java，道理完全一样。
@@ -13,7 +15,7 @@
 
 你走到王宫门口。卫兵拦住你：「想接任务？先在冒险者公会登记。」
 
-登记处的老头递给你一张羊皮纸：「告诉我你的名字、职业和初始属性。别用嘴说——用 Python 写。」
+登记处的老头递给你一张羊皮纸：「告诉我你的名字和初始属性。别用嘴说——用 Python 写。」
 
 你现在不会写一行代码？没关系。这本书从头开始，每学一个编程概念，你的冒险就推进一段。学完最后一课，你就能挑战恶龙——当然，是在代码的世界里。
 
@@ -26,8 +28,8 @@
 | 课       | 主题                    | 节数   | 冒险进度                           |
 | -------- | ----------------------- | ------ | ---------------------------------- |
 | 1        | 编程为什么重要          | 2      | 理解：为什么勇者需要编程           |
-| 2        | Python 安装与第一个程序 | 3      | 在冒险者公会登记，写出第一行代码   |
-| 3        | 变量与数据类型          | 4      | 创建角色——HP、MP、攻击力、金币     |
+| 2        | Python 安装与第一个程序 | 4      | 在冒险者公会登记，写出第一行代码   |
+| 3        | 变量与数据类型          | 5      | 创建角色——HP、MP、攻击力、金币     |
 | 4        | 运算符与输入输出        | 4      | 勇者走入武器店，输入预算算能买什么 |
 | 5        | 条件判断                | 3      | 战斗逻辑——HP归零了吗？暴击了吗？   |
 | 6        | for 循环                | 3      | 遍历背包、清点战利品、批量喝药     |
@@ -42,7 +44,7 @@
 | 15       | 错误处理                | 3      | 装备不匹配？魔法值不够？优雅处理   |
 | 16       | 推导式、生成器与 Lambda | 4      | 智能整理背包、筛选可用药水         |
 | 17       | 装饰器与类型提示        | 4      | 战斗计时、技能冷却、角色类型标注   |
-| **合计** |                         | **57** |                                    |
+| **合计** |                         | **59** |                                    |
 
 ---
 
@@ -179,12 +181,12 @@ quest_item = None   # 任务物品还没拿到——不是「没有」，是「�
 ### 4.1 算术与比较运算符
 
 ```python
-# 武器店：铁剑 80 金币、钢盾 120 金币
+# 武器店：TRUE之剑 80 金币、FALSE之盾 120 金币
 gold = 200
 sword = 80
 shield = 120
 
-can_afford_both = gold >= (sword + shield)   # → False，200 < 200，不够买两件
+can_afford_both = gold >= (sword + shield)   # → True，200 >= 200，刚好够买两件
 can_afford_one = gold >= sword               # → True
 
 # 伤害计算（基础公式——后面课程会逐步加入暴击、克制等因素）
@@ -546,10 +548,10 @@ def battle(hero, monster):
 
 # 根据战斗结果做不同的事
 hero = {"name": "勇者刘老三", "hp": 100, "atk": 15, "def": 5}
-dragon = {"name": "恶龙", "hp": 500, "atk": 80, "def": 30}
-result = battle(hero, dragon)
+dark_knight = {"name": "暗影骑士", "hp": 180, "atk": 28, "def": 12}
+result = battle(hero, dark_knight)
 if result == "victory":
-    print("🏆 击败了恶龙！")
+    print("🏆 击败了暗影骑士！")
     # level_up(hero) ← 后面可以加上升级逻辑
     # open_treasure_chest() ← 后面可以加上宝箱系统
 elif result == "defeat":
@@ -578,9 +580,10 @@ world_name = "阿尔德大陆"   # 全局——所有人都知道这个世界叫
 
 ```python
 # 拆之前——「战斗」一个函数干了四件事
-def battle(...):
+def battle(hero, monster):
     # 选指令 → 算伤害 → 播动画 → 记录日志
     # 100 行，改起来头疼
+    ...
 
 # 拆之后——每件事一个函数
 def select_action(hero): ...        # 选指令
@@ -665,7 +668,7 @@ slime_drops = ("回复药", "黏液", "小金币")   # 元组
 
 # 角色出生属性（不会变的基础值）
 # 顺序约定：第0位=HP, 第1位=MP, 第2位=ATK, 第3位=DEF
-base_stats = (100, 50, 15, 10)
+base_stats = (100, 50, 15, 5)
 # base_stats[0] → 100 (初始HP)
 # base_stats[2] → 15  (初始攻击力)
 ```
@@ -684,23 +687,23 @@ base_stats = (100, 50, 15, 10)
 # 勇者的完整属性面板
 hero = {
     "name": "勇者刘老三",
-    "level": 15,
-    "hp": 320,
-    "max_hp": 320,
+    "level": 8,
+    "hp": 240,
+    "max_hp": 240,
     "mp": 85,
-    "max_mp": 100,
-    "atk": 65,
-    "def": 40,
-    "gold": 3840,
-    "exp": 2750,
+    "max_mp": 120,
+    "atk": 59,
+    "def": 43,
+    "gold": 4050,
+    "total_exp": 6500,
 }
 
-hero["hp"]       # → 320（当前血量）
-hero["atk"]      # → 65（攻击力）
+hero["hp"]       # → 240（当前血量）
+hero["atk"]      # → 59（攻击力）
 hero.get("luck", 0)   # → 0（没有幸运值，默认 0）
 
 # 获得新属性！
-hero["title"] = "史莱姆克星"   # 随时加字段（终章会升级为「恶龙杀手」）
+hero["title"] = "循环克星"   # 随时加字段（完成终章后升级为「赤帝之子」）
 ```
 
 **类比**：角色状态面板——你按 C 键打开，看到所有属性整齐排列。`hero["hp"]` 就是「看一眼血量」。字典就是角色面板的代码形态。
@@ -710,10 +713,12 @@ hero["title"] = "史莱姆克星"   # 随时加字段（终章会升级为「恶
 ```python
 # 装备栏——每个部位一件装备
 equipment = {
-    "武器": "传说之剑",
-    "头盔": "龙鳞盔",
-    "铠甲": "秘银甲",
-    "饰品": "勇者之证",
+    "武器": "FOR循环长矛",
+    "头盔": "缩进头盔",
+    "铠甲": "布衣",
+    "盾牌": "FALSE之盾",
+    "饰品": "WHILE真言护符",
+    "鞋子": None,
 }
 
 # 查看所有装备
@@ -728,7 +733,7 @@ if "头盔" in equipment:
     print(f"头盔：{equipment['头盔']}")
 ```
 
-**类比**：装备界面——武器槽、头盔槽、铠甲槽、饰品槽。每个槽位（key）装一件装备（value）。换武器就是给「武器」这个 key 换一个 value。
+**类比**：装备界面——武器、头盔、铠甲、盾牌、饰品、鞋子六个槽位。每个槽位（key）装一件装备（value），未装备时用 `None`。换武器就是给「武器」这个 key 换一个 value。
 
 ### 11.3 集合——不重复的无序容器
 
@@ -860,11 +865,11 @@ clean = re.sub(r"<[^>]*>", "", raw_guide)
 ### 13.2 编码——为什么会有乱码
 
 ```python
-# 古代石板（日文编码），你用通用解读器（UTF-8）读——乱码
-# 换「古代文字解读器」（shift-jis）——就能读了！
+# 古代石板（旧式中文编码），你用通用解读器（UTF-8）读——会失败或出现乱码
+# 换「古代文字解读器」（GBK）——就能读了！
 # （with open 语法在第14课详细讲解，这里先看 encoding 参数的作用）
 
-with open("古代石板.txt", "r", encoding="shift-jis") as f:
+with open("古代石板.txt", "r", encoding="gbk") as f:
     prophecy = f.read()   # 「当四颗星辰汇聚，勇者将降临」
 ```
 
@@ -878,7 +883,7 @@ with open("save_data.json", "w", encoding="utf-8") as f:
     f.write(save_json)
 
 # 你的项目规则里写：
-# 「所有 open() 都指定 encoding='utf-8'」
+# 「所有项目自有文本的 open() 都指定 encoding='utf-8'」
 # —— AI 帮你记住这个习惯
 ```
 
@@ -888,7 +893,7 @@ with open("save_data.json", "w", encoding="utf-8") as f:
 
 ## 第十四课：模块与文件操作
 
-> **核心理念**：存档/读档——RPG 里最重要的功能。打了一夜的恶龙，不能白打。
+> **核心理念**：存档/读档——RPG 里最重要的功能。打了一夜的遗迹守护者，不能白打。
 
 ### 14.1 import——使用别人的代码
 
@@ -984,6 +989,8 @@ else:
 ## 第十五课：错误处理
 
 > **核心理念**：装备不匹配？MP 不够？物品用完？优雅处理——不要闪退。
+>
+> **边界说明**：本课的职业限制是异常处理的独立教学示例；产品 MVP 本身不设置职业系统。
 
 ### 15.1 异常是什么
 
@@ -1039,24 +1046,23 @@ class GameOver(Exception):
     """勇者阵亡——自定义异常"""
     pass
 
-def check_alive(hero):
+def check_hero_alive(hero):
     """检查勇者是否还活着——死了就抛出异常"""
     if hero["hp"] <= 0:
         raise GameOver("勇者倒下了...")
 
 # 在战斗循环中使用（attack 是第8课定义的统一攻击函数）
 hero = {"name": "勇者刘老三", "hp": 100, "atk": 15, "def": 5}
-monster = {"name": "恶龙", "hp": 500, "atk": 80, "def": 30}
+monster = {"name": "地狱犬", "hp": 70, "atk": 12, "def": 6}
 
 try:
     # 战斗主循环
     while hero["hp"] > 0 and monster["hp"] > 0:
         attack(hero, monster)         # 勇者先手（课8.1 定义的函数）
-        check_alive(monster)          # 怪物倒了吗？
         if monster["hp"] <= 0:
-            break
+            break                     # 怪物倒下，正常结束循环
         attack(monster, hero)         # 怪物反击（同样的 attack 函数！）
-        check_alive(hero)             # 勇者倒了吗？
+        check_hero_alive(hero)        # 勇者倒下，进入 except
 except GameOver as e:
     print(f"\n☠️ {e}")
     print("—— GAME OVER ——")
@@ -1126,20 +1132,21 @@ fire_weak = {e["name"] for e in enemies if e["weakness"] == "火"}
 ### 16.3 生成器与 yield
 
 ```python
+import re
+
 def read_battle_log(filename):
     """读取超长战斗日志——一行一行处理，不占内存"""
-    import re
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         for line in f:
             if "伤害" in line:
                 yield line.strip()
 
 # 处理十万行战斗日志，内存只占一行的大小
-import re
 total_damage = 0
 for line in read_battle_log("epic_battle.log"):
-    damage = int(re.search(r"造成(\d+)点伤害", line).group(1))
-    total_damage += damage
+    match = re.search(r"造成\s*(\d+)\s*点伤害", line)
+    if match is not None:
+        total_damage += int(match.group(1))
 print(f"这场战斗总共造成了 {total_damage} 点伤害！")
 ```
 
@@ -1269,6 +1276,8 @@ boss = Monster(name="恶龙", hp=5000, atk=120, defense=50, element="火", is_bo
 
 print(slime)   # → Monster(name='史莱姆', hp=30, atk=8, defense=0, element='无', is_boss=False)
 
+monster_handbook = {slime.name: slime, boss.name: boss}
+
 def find_monster(name: str) -> Optional[Monster]:
     """查怪物图鉴——可能还没遇到，返回 None"""
     return monster_handbook.get(name)
@@ -1278,7 +1287,7 @@ def find_monster(name: str) -> Optional[Monster]:
 
 ---
 
-## 终章：恶龙倒下了
+## 终章备战：走到恶龙巢穴
 
 你从零开始创建勇者，写了 17 课代码。回过头看——
 
@@ -1293,7 +1302,7 @@ def find_monster(name: str) -> Optional[Monster]:
 
 **最重要的收获**：你不是学会了 Python。你是学会了「用编程思维打 RPG」——勇者的每一个动作，背后都是一段可以精准描述的逻辑。Python 只是你的第一把剑，将来换 JavaScript 之剑、Go 之盾、Java 之甲，战斗方式不变。
 
-还记得课3时勇者的称号是什么吗？「史莱姆克星」。现在，他叫「恶龙杀手」。从一个 title 变量的赋值开始，你一路写完了整场冒险——变量没变，是勇者变了。
+还记得课 3 时勇者的称号是什么吗？「史莱姆克星」。等 PRD 规划的终章 Boss 挑战与测试完成、你真正击败恶龙后，他会获得「赤帝之子」。这份总览只负责带你走到备战阶段，不把尚未实现的挑战写成已经通关。
 
 **而 AI 是你最强的冒险伙伴。** 你说「检查第 15 行的技能判定，少了一个暴击分支」——AI 秒修。你说「帮我把战斗循环抽成函数」——AI 秒重构。你说「给技能系统加个冷却机制」——AI 开始写代码，你负责说「对」「不对」「再加个效果」。
 
