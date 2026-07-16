@@ -10,8 +10,21 @@ test("a contracted game state survives export and import", () => {
   assert.deepEqual(parseGameState(serializeGameState(state)), state);
 });
 
+test("legacy v1 saves migrate to the current audio preferences contract", () => {
+  const legacy = {
+    ...state,
+    version: 1,
+    settings: { soundEnabled: false, reducedMotion: true },
+  };
+
+  assert.deepEqual(parseGameState(JSON.stringify(legacy)), {
+    ...state,
+    settings: { soundEnabled: false, sfxVolume: 0.55, reducedMotion: true },
+  });
+});
+
 test("imports reject unknown versions and missing required sections", () => {
-  assert.throws(() => parseGameState(JSON.stringify({ ...state, version: 2 })), /版本/);
+  assert.throws(() => parseGameState(JSON.stringify({ ...state, version: 3 })), /版本/);
   const withoutHero = JSON.parse(JSON.stringify(state));
   Reflect.deleteProperty(withoutHero, "hero");
   assert.throws(() => parseGameState(JSON.stringify(withoutHero)), /存档/);

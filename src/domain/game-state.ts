@@ -1,6 +1,7 @@
 import { getChapter } from "./chapter-catalog.ts";
 
-export const GAME_STATE_VERSION = 1;
+export const GAME_STATE_VERSION = 2;
+export const DEFAULT_SFX_VOLUME = 0.55;
 const MAX_CHAPTER = 17;
 const BOSS_EXP = 200;
 const BOSS_COINS = 300;
@@ -24,7 +25,7 @@ export interface EquipmentSlots {
 }
 
 export interface GameState {
-  readonly version: 1;
+  readonly version: 2;
   readonly hero: {
     readonly id: string;
     readonly name: string;
@@ -43,8 +44,14 @@ export interface GameState {
     readonly attempts: Readonly<Record<string, number>>;
   };
   readonly inventory: readonly { readonly itemId: string; readonly quantity: number }[];
-  readonly settings: { readonly soundEnabled: boolean; readonly reducedMotion: boolean };
+  readonly settings: {
+    readonly soundEnabled: boolean;
+    readonly sfxVolume: number;
+    readonly reducedMotion: boolean;
+  };
 }
+
+export type AudioSettings = Pick<GameState["settings"], "soundEnabled" | "sfxVolume">;
 
 const levelForExp = (totalExp: number): number => {
   let level = 1;
@@ -102,8 +109,16 @@ export const createGameState = (
       { itemId: "wood-sword", quantity: 1 },
       { itemId: "cloth-armor", quantity: 1 },
     ],
-    settings: { soundEnabled: true, reducedMotion: false },
+    settings: { soundEnabled: true, sfxVolume: DEFAULT_SFX_VOLUME, reducedMotion: false },
   };
+};
+
+export const updateAudioSettings = (state: GameState, settings: AudioSettings): GameState => {
+  if (!Number.isFinite(settings.sfxVolume) || settings.sfxVolume < 0 || settings.sfxVolume > 1) {
+    throw new RangeError("音效音量需要在 0 到 1 之间");
+  }
+
+  return { ...state, settings: { ...state.settings, ...settings } };
 };
 
 export const canAccessChapter = (state: GameState, chapterNumber: number): boolean => (

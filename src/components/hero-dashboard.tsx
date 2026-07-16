@@ -7,6 +7,7 @@ import { PixelAvatar } from "@/components/pixel-avatar";
 import { PixelSprite } from "@/components/pixel-sprite";
 import { SaveControls } from "@/components/save-controls";
 import { getEffectiveStats, getEquipment, type EquipmentSlot } from "@/domain/equipment";
+import { playSound } from "@/lib/audio-assets";
 import { itemSpriteAsset } from "@/lib/game-art-assets";
 import { useGameStore } from "@/store/game-store";
 
@@ -19,10 +20,13 @@ const SLOT_LABELS: Readonly<Record<EquipmentSlot, string>> = {
   boots: "靴子",
 };
 
+const PERCENT_SCALE = 100;
+
 export const HeroDashboard = (): React.ReactNode => {
   const game = useGameStore(({ game }) => game);
   const hydrated = useGameStore(({ hydrated }) => hydrated);
   const equipItem = useGameStore(({ equipItem }) => equipItem);
+  const updateAudioSettings = useGameStore(({ updateAudioSettings }) => updateAudioSettings);
   const [message, setMessage] = useState("");
 
   if (!hydrated) return <div className="pixel-panel p-8">正在读取勇者档案...</div>;
@@ -39,6 +43,7 @@ export const HeroDashboard = (): React.ReactNode => {
   const equip = (itemId: string): void => {
     try {
       equipItem(itemId);
+      playSound("equip", game.settings);
       setMessage(`${getEquipment(itemId)?.name ?? "装备"} 已装备。`);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "无法装备。");
@@ -77,6 +82,42 @@ export const HeroDashboard = (): React.ReactNode => {
             ))}
           </dl>
         </div>
+      </section>
+
+      <section className="audio-settings pixel-panel p-6">
+        <div>
+          <p className="eyebrow">声音设置</p>
+          <h2 className="mt-2 text-2xl">克制的冒险反馈</h2>
+          <p className="muted mt-2">只在打开任务、运行代码、交易和装备时播放短音效；学习页面不会自动播放音乐。</p>
+        </div>
+        <button
+          aria-pressed={game.settings.soundEnabled}
+          className="pixel-button secondary"
+          onClick={() => {
+            const settings = { ...game.settings, soundEnabled: !game.settings.soundEnabled };
+            updateAudioSettings(settings);
+            if (settings.soundEnabled) playSound("ui-confirm", settings);
+          }}
+          type="button"
+        >
+          {game.settings.soundEnabled ? "关闭音效" : "开启音效"}
+        </button>
+        <label className="audio-volume" htmlFor="sfx-volume">
+          <span>音效音量 <output>{Math.round(game.settings.sfxVolume * PERCENT_SCALE)}%</output></span>
+          <input
+            disabled={!game.settings.soundEnabled}
+            id="sfx-volume"
+            max={PERCENT_SCALE}
+            min="0"
+            onInput={(event) => updateAudioSettings({
+              soundEnabled: game.settings.soundEnabled,
+              sfxVolume: Number(event.currentTarget.value) / PERCENT_SCALE,
+            })}
+            step="5"
+            type="range"
+            value={game.settings.sfxVolume * PERCENT_SCALE}
+          />
+        </label>
       </section>
 
       <section className="pixel-panel p-6">

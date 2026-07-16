@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "license": "Original project assets; see README.md",
+  "defaults": {
+    "musicVolume": 0.28,
+    "sfxVolume": 0.55
+  },
+  "skins": {
+    "european": "/assets/audio/european",
+    "chinese": "/assets/audio/chinese"
+  },
+  "music": [
+    {
+      "id": "world-map",
+      "file": "bgm/world-map-loop.ogg",
+      "loop": true,
+      "title": {
+        "european": "Rune Road",
+        "chinese": "云篆山河"
+      },
+      "bpm": {
+        "european": 96,
+        "chinese": 88
+      },
+      "durationSeconds": {
+        "european": 20.0,
+        "chinese": 21.818
+      }
+    },
+    {
+      "id": "region-explore",
+      "file": "bgm/region-explore-loop.ogg",
+      "loop": true,
+      "title": {
+        "european": "Brassleaf Trail",
+        "chinese": "竹径寻符"
+      },
+      "bpm": {
+        "european": 112,
+        "chinese": 104
+      },
+      "durationSeconds": {
+        "european": 17.143,
+        "chinese": 18.462
+      }
+    },
+    {
+      "id": "dungeon",
+      "file": "bgm/dungeon-loop.ogg",
+      "loop": true,
+      "title": {
+        "european": "The Indented Crypt",
+        "chinese": "玄门空栈"
+      },
+      "bpm": {
+        "european": 76,
+        "chinese": 72
+      },
+      "durationSeconds": {
+        "european": 25.263,
+        "chinese": 26.667
+      }
+    },
+    {
+      "id": "boss",
+      "file": "bgm/boss-loop.ogg",
+      "loop": true,
+      "title": {
+        "european": "Red Syntax Wyrm",
+        "chinese": "烬鳞龙王"
+      },
+      "bpm": {
+        "european": 148,
+        "chinese": 138
+      },
+      "durationSeconds": {
+        "european": 12.973,
+        "chinese": 13.913
+      }
+    }
+  ],
+  "sfx": [
+    {
+      "id": "ui-move",
+      "file": "sfx/ui-move.ogg",
+      "durationSeconds": 0.12,
+      "label": "Move selection"
+    },
+    {
+      "id": "ui-confirm",
+      "file": "sfx/ui-confirm.ogg",
+      "durationSeconds": 0.24,
+      "label": "Confirm"
+    },
+    {
+      "id": "ui-cancel",
+      "file": "sfx/ui-cancel.ogg",
+      "durationSeconds": 0.22,
+      "label": "Cancel"
+    },
+    {
+      "id": "dialog-open",
+      "file": "sfx/dialog-open.ogg",
+      "durationSeconds": 0.34,
+      "label": "Open dialog"
+    },
+    {
+      "id": "quest-unlock",
+      "file": "sfx/quest-unlock.ogg",
+      "durationSeconds": 1.1,
+      "label": "Quest unlocked"
+    },
+    {
+      "id": "code-run",
+      "file": "sfx/code-run.ogg",
+      "durationSeconds": 0.45,
+      "label": "Run code"
+    },
+    {
+      "id": "code-success",
+      "file": "sfx/code-success.ogg",
+      "durationSeconds": 1.25,
+      "label": "Code passed"
+    },
+    {
+      "id": "code-error",
+      "file": "sfx/code-error.ogg",
+      "durationSeconds": 0.48,
+      "label": "Code error"
+    },
+    {
+      "id": "coin",
+      "file": "sfx/coin.ogg",
+      "durationSeconds": 0.45,
+      "label": "Collect coin"
+    },
+    {
+      "id": "equip",
+      "file": "sfx/equip.ogg",
+      "durationSeconds": 0.55,
+      "label": "Equip item"
+    },
+    {
+      "id": "chest-open",
+      "file": "sfx/chest-open.ogg",
+      "durationSeconds": 1.0,
+      "label": "Open chest"
+    },
+    {
+      "id": "dragon-roar",
+      "file": "sfx/dragon-roar.ogg",
+      "durationSeconds": 1.6,
+      "label": "Dragon roar"
+    }
+  ]
+}

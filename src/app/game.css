@@ -159,6 +159,33 @@
   font-size: clamp(2rem, 5vw, 3.25rem);
 }
 
+.audio-settings {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) auto minmax(220px, 0.7fr);
+  align-items: center;
+  gap: 24px;
+}
+
+.audio-volume {
+  display: grid;
+  gap: 10px;
+}
+
+.audio-volume span {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.audio-volume output {
+  color: var(--accent);
+}
+
+.audio-volume input {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
 .stat-grid,
 .equipment-slots {
   display: grid;
@@ -356,9 +383,18 @@ button.map-node-card:hover {
   .hero-card,
   .shop-heading,
   .item-card,
-  .save-controls {
+  .save-controls,
+  .audio-settings {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .audio-settings {
+    display: flex;
+  }
+
+  .audio-volume {
+    width: 100%;
   }
 
   .stat-grid,

@@ -9,6 +9,7 @@ import remarkGfm from "remark-gfm";
 import { EnvironmentBackdrop } from "@/components/environment-backdrop";
 import { PixelSprite } from "@/components/pixel-sprite";
 import { submitExecution } from "@/lib/api-client";
+import { playSound } from "@/lib/audio-assets";
 import { chapterEnvironmentAsset } from "@/lib/environment-assets";
 import { bossSpriteAsset } from "@/lib/game-art-assets";
 import type { ChapterDetail } from "@/server/chapter-service";
@@ -30,6 +31,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const bossSprite = bossSpriteAsset(chapter.number);
 
   const run = async (): Promise<void> => {
+    if (game) playSound("code-run", game.settings);
     setState("running");
     setOutput("正在召唤隔离的 Python 运行环境...");
     recordAttempt(chapter.exercise.id);
@@ -38,9 +40,11 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
       const detail = [result.message, result.stdout && `\n输出：\n${result.stdout}`, result.stderr && `\n错误：\n${result.stderr}`].filter(Boolean).join("");
       setOutput(`${detail}\n耗时：${result.durationMs}ms`);
       setState(result.status === "passed" ? "passed" : "failed");
+      if (game) playSound(result.status === "passed" ? "code-success" : "code-error", game.settings);
       if (result.status === "passed") completeChapter(chapter.number);
     } catch (error) {
       setState("failed");
+      if (game) playSound("code-error", game.settings);
       setOutput(error instanceof Error ? error.message : "运行失败，请稍后重试。");
     }
   };

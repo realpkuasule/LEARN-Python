@@ -40,8 +40,11 @@ test("execution requests support bounded source code and standard input", async 
 test("local save contract is versioned and rejects unknown fields", async () => {
   const schema = JSON.parse(await readFile(gameStatePath, "utf8"));
 
-  assert.equal(schema.properties.version.const, 1);
+  assert.equal(schema.properties.version.const, 2);
   assert.equal(schema.additionalProperties, false);
   assert.equal(schema.properties.hero.additionalProperties, false);
   assert.equal(schema.properties.progress.properties.completedChapters.uniqueItems, true);
+  assert.deepEqual(schema.properties.settings.required, ["soundEnabled", "sfxVolume", "reducedMotion"]);
+  assert.equal(schema.properties.settings.properties.sfxVolume.minimum, 0);
+  assert.equal(schema.properties.settings.properties.sfxVolume.maximum, 1);
 });

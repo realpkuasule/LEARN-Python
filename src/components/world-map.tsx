@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { PixelSprite } from "@/components/pixel-sprite";
 import { CHAPTERS, type Chapter } from "@/domain/chapter-catalog";
 import { getChapterViewState, type ChapterViewState } from "@/domain/map-view";
+import { playSound } from "@/lib/audio-assets";
 import { chapterEnvironmentAsset } from "@/lib/environment-assets";
 import { bossSpriteAsset, chapterNodeSpriteAsset, guiSpriteAsset } from "@/lib/game-art-assets";
 import { useGameStore } from "@/store/game-store";
@@ -92,7 +93,10 @@ export const WorldMap = (): React.ReactNode => {
                     <button
                       aria-haspopup="dialog"
                       className={className}
-                      onClick={() => setSelectedChapter(chapter)}
+                      onClick={() => {
+                        playSound("dialog-open", game.settings);
+                        setSelectedChapter(chapter);
+                      }}
                       type="button"
                     >
                       {content}
@@ -121,6 +125,7 @@ export const WorldMap = (): React.ReactNode => {
             <div className="quest-scene">
               <EnvironmentBackdrop
                 alt={`${selectedChapter.location}的章节场景`}
+                priority
                 sizes="(max-width: 560px) calc(100vw - 32px), 560px"
                 src={chapterEnvironmentAsset(selectedChapter.number)}
               />

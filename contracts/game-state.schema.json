@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["version", "hero", "progress", "inventory", "settings"],
   "properties": {
-    "version": { "const": 1 },
+    "version": { "const": 2 },
     "hero": {
       "type": "object",
       "additionalProperties": false,
@@ -78,9 +78,10 @@
     "settings": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["soundEnabled", "reducedMotion"],
+      "required": ["soundEnabled", "sfxVolume", "reducedMotion"],
       "properties": {
         "soundEnabled": { "type": "boolean" },
+        "sfxVolume": { "type": "number", "minimum": 0, "maximum": 1 },
         "reducedMotion": { "type": "boolean" }
       }
     }

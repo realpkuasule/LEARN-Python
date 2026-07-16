@@ -7,6 +7,8 @@ import { persist } from "zustand/middleware";
 import {
   completeChapter as applyChapterCompletion,
   createGameState,
+  updateAudioSettings as applyAudioSettings,
+  type AudioSettings,
   type GameState,
   recordAttempt as applyAttempt,
 } from "@/domain/game-state";
@@ -21,6 +23,7 @@ interface GameStore {
   readonly recordAttempt: (exerciseId: string) => void;
   readonly purchaseItem: (itemId: string) => void;
   readonly equipItem: (itemId: string) => void;
+  readonly updateAudioSettings: (settings: AudioSettings) => void;
   readonly loadGame: (game: GameState) => void;
   readonly reset: () => void;
   readonly setHydrated: () => void;
@@ -43,6 +46,9 @@ export const useGameStore = create<GameStore>()(
       })),
       equipItem: (itemId) => set(({ game }) => ({
         game: game ? applyEquipItem(game, itemId) : null,
+      })),
+      updateAudioSettings: (settings) => set(({ game }) => ({
+        game: game ? applyAudioSettings(game, settings) : null,
       })),
       loadGame: (game) => set({ game }),
       reset: () => set({ game: null }),

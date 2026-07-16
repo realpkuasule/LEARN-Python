@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { PixelSprite } from "@/components/pixel-sprite";
 import { EQUIPMENT } from "@/domain/equipment";
+import { playSound } from "@/lib/audio-assets";
 import { itemSpriteAsset } from "@/lib/game-art-assets";
 import { useGameStore } from "@/store/game-store";
 
@@ -31,6 +32,7 @@ export const EquipmentShop = (): React.ReactNode => {
   const buy = (itemId: string): void => {
     try {
       purchaseItem(itemId);
+      playSound("coin", game.settings);
       setMessage("交易完成！装备已放入背包。");
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "交易失败。");

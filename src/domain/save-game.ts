@@ -1,4 +1,4 @@
-import type { GameState } from "./game-state.ts";
+import { DEFAULT_SFX_VOLUME, type GameState } from "./game-state.ts";
 
 type JsonRecord = Record<string, unknown>;
 
@@ -7,7 +7,8 @@ const HERO_KEYS = ["id", "name", "avatarId", "createdAt", "level", "totalExp", "
 const STATS_KEYS = ["maxHp", "maxMp", "atk", "def"] as const;
 const EQUIPMENT_KEYS = ["weapon", "helmet", "armor", "shield", "accessory", "boots"] as const;
 const PROGRESS_KEYS = ["currentChapter", "completedChapters", "attempts"] as const;
-const SETTINGS_KEYS = ["soundEnabled", "reducedMotion"] as const;
+const SETTINGS_KEYS = ["soundEnabled", "sfxVolume", "reducedMotion"] as const;
+const LEGACY_SETTINGS_KEYS = ["soundEnabled", "reducedMotion"] as const;
 const INVENTORY_KEYS = ["itemId", "quantity"] as const;
 const MAX_CHAPTER = 17;
 
@@ -80,7 +81,25 @@ const isSettings = (value: unknown): boolean => (
   isRecord(value)
   && hasExactKeys(value, SETTINGS_KEYS)
   && typeof value.soundEnabled === "boolean"
+  && typeof value.sfxVolume === "number"
+  && Number.isFinite(value.sfxVolume)
+  && value.sfxVolume >= 0
+  && value.sfxVolume <= 1
   && typeof value.reducedMotion === "boolean"
+);
+
+const isLegacySettings = (value: unknown): value is JsonRecord => (
+  isRecord(value)
+  && hasExactKeys(value, LEGACY_SETTINGS_KEYS)
+  && typeof value.soundEnabled === "boolean"
+  && typeof value.reducedMotion === "boolean"
+);
+
+const hasValidSections = (value: JsonRecord): boolean => (
+  hasExactKeys(value, TOP_LEVEL_KEYS)
+  && isHero(value.hero)
+  && isProgress(value.progress)
+  && isInventory(value.inventory)
 );
 
 export const parseGameState = (json: string): GameState => {
@@ -91,15 +110,22 @@ export const parseGameState = (json: string): GameState => {
     throw new Error("存档不是有效的 JSON 文件。", { cause: error });
   }
 
-  if (isRecord(value) && value.version !== 1) throw new Error("存档版本不受支持。");
-  if (!isRecord(value)
-    || !hasExactKeys(value, TOP_LEVEL_KEYS)
-    || !isHero(value.hero)
-    || !isProgress(value.progress)
-    || !isInventory(value.inventory)
-    || !isSettings(value.settings)) {
+  if (!isRecord(value)) throw new Error("存档内容不符合当前契约。");
+  if (value.version !== 1 && value.version !== 2) throw new Error("存档版本不受支持。");
+  if (!hasValidSections(value)) {
     throw new Error("存档内容不符合当前契约。");
   }
+
+  if (value.version === 1) {
+    if (!isLegacySettings(value.settings)) throw new Error("存档内容不符合当前契约。");
+    return {
+      ...value,
+      version: 2,
+      settings: { ...value.settings, sfxVolume: DEFAULT_SFX_VOLUME },
+    } as unknown as GameState;
+  }
+
+  if (!isSettings(value.settings)) throw new Error("存档内容不符合当前契约。");
   return value as unknown as GameState;
 };
 

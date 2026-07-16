@@ -196,6 +196,20 @@ input {
   color: var(--text);
 }
 
+.audio-toggle {
+  min-height: 34px;
+  border: 2px solid var(--border-dark);
+  background: var(--canvas);
+  color: var(--text-muted);
+  padding: 5px 8px;
+  cursor: pointer;
+}
+
+.audio-toggle[aria-pressed="true"] {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
 .page-container {
   width: min(1440px, calc(100% - 48px));
   margin: 0 auto;

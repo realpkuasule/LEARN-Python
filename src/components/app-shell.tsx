@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 
 import { PixelAvatar } from "@/components/pixel-avatar";
 import { PixelSprite } from "@/components/pixel-sprite";
+import { playSound } from "@/lib/audio-assets";
 import { guiSpriteAsset } from "@/lib/game-art-assets";
 import { GameHydrator, useGameStore } from "@/store/game-store";
 
@@ -19,6 +20,7 @@ const NAVIGATION = [
 export const AppShell = ({ children }: Readonly<{ children: ReactNode }>): ReactNode => {
   const pathname = usePathname();
   const game = useGameStore(({ game }) => game);
+  const updateAudioSettings = useGameStore(({ updateAudioSettings }) => updateAudioSettings);
 
   return (
     <div className="app-shell">
@@ -40,6 +42,19 @@ export const AppShell = ({ children }: Readonly<{ children: ReactNode }>): React
             <>
               <span className="hud-stat">LV <strong>{game.hero.level}</strong></span>
               <span className="hud-stat">金币 <strong>{game.hero.coins}</strong></span>
+              <button
+                aria-label={game.settings.soundEnabled ? "关闭音效" : "开启音效"}
+                aria-pressed={game.settings.soundEnabled}
+                className="audio-toggle"
+                onClick={() => {
+                  const settings = { ...game.settings, soundEnabled: !game.settings.soundEnabled };
+                  updateAudioSettings(settings);
+                  if (settings.soundEnabled) playSound("ui-confirm", settings);
+                }}
+                type="button"
+              >
+                音效 {game.settings.soundEnabled ? "开" : "关"}
+              </button>
               <PixelAvatar avatarId={game.hero.avatarId} compact />
             </>
           ) : <span className="muted">尚未创建勇者</span>}

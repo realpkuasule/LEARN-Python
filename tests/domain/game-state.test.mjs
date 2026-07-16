@@ -5,18 +5,29 @@ import {
   canAccessChapter,
   completeChapter,
   createGameState,
+  updateAudioSettings,
 } from "../../src/domain/game-state.ts";
 
 test("a new hero starts with the contracted stats and chapter one unlocked", () => {
   const state = createGameState("刘老三", 3, "2026-07-16T00:00:00.000Z", "hero-1");
 
-  assert.equal(state.version, 1);
+  assert.equal(state.version, 2);
   assert.equal(state.hero.level, 1);
   assert.equal(state.hero.totalExp, 0);
   assert.equal(state.hero.coins, 0);
   assert.deepEqual(state.hero.baseStats, { maxHp: 100, maxMp: 50, atk: 15, def: 5 });
+  assert.deepEqual(state.settings, { soundEnabled: true, sfxVolume: 0.55, reducedMotion: false });
   assert.equal(canAccessChapter(state, 1), true);
   assert.equal(canAccessChapter(state, 2), false);
+});
+
+test("audio preferences update within the contracted volume range", () => {
+  const state = createGameState("刘老三", 1, "2026-07-16T00:00:00.000Z", "hero-1");
+  const updated = updateAudioSettings(state, { soundEnabled: false, sfxVolume: 0.25 });
+
+  assert.deepEqual(updated.settings, { soundEnabled: false, sfxVolume: 0.25, reducedMotion: false });
+  assert.throws(() => updateAudioSettings(state, { soundEnabled: true, sfxVolume: -0.1 }), /音量/);
+  assert.throws(() => updateAudioSettings(state, { soundEnabled: true, sfxVolume: 1.1 }), /音量/);
 });
 
 test("completing a chapter grants formula rewards and unlocks the next chapter", () => {
