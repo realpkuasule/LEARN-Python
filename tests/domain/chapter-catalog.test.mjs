@@ -30,12 +30,24 @@ test("rewards follow the PRD chapter formulas", () => {
   }
 });
 
-test("chapter five is the first three-case hidden-test Boss contract", () => {
-  const chapterFive = CHAPTERS[4];
+test("all ten Bosses publish three-case function contracts without private data", () => {
+  const bossFunctionNames = new Map([
+    [5, "battle_result"],
+    [6, "turn_sequence"],
+    [7, "countdown"],
+    [9, "battle_result"],
+    [10, "organize_inventory"],
+    [11, "hero_summary"],
+    [12, "clean_dialog"],
+    [14, "file_suffix"],
+    [15, "safe_divide"],
+    [17, "battle_turn"],
+  ]);
 
-  assert.equal(chapterFive.exercise.testCount, 3);
-  assert.equal(Object.hasOwn(chapterFive.exercise, "hiddenTests"), false);
-  assert.equal(Object.hasOwn(chapterFive.exercise, "expectedOutput"), false);
-  assert.match(chapterFive.exercise.instructions, /battle_result\(boss_hp\)/);
-  assert.match(chapterFive.exercise.starterCode, /def battle_result\(boss_hp\):/);
+  for (const chapter of CHAPTERS) {
+    assert.equal(chapter.exercise.testCount, chapter.isBoss ? 3 : 1);
+    assert.equal(Object.hasOwn(chapter.exercise, "hiddenTests"), false);
+    assert.equal(Object.hasOwn(chapter.exercise, "expectedOutput"), false);
+    if (chapter.isBoss) assert.match(chapter.exercise.starterCode, new RegExp(`def ${bossFunctionNames.get(chapter.number)}\\(`));
+  }
 });

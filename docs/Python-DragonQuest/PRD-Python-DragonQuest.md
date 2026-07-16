@@ -525,7 +525,7 @@ AiConversation (id, hero_id, chapter_number, prompt, response, created_at)
 - [x] 角色创建（名字+头像，存 localStorage）
 - [x] 世界地图界面（17 节点分区路线 + 解锁状态 + 章节卡片）
 - [x] 章节内容页（剧情任务卡 + 42/58 双栏 + Markdown + Monaco + 运行结果）
-- [ ] 独立代码执行服务（当前已完成 Docker 一次一容器、Python 3.12、stdin/stdout、禁网与资源限制，以及第 5 章函数返回值隐藏测试；nsjail 仍待生产强化）
+- [ ] 独立代码执行服务（当前已完成 Docker 一次一容器、Python 3.12、stdin/stdout、禁网与资源限制，以及 10 个 Boss 的函数返回值隐藏测试；nsjail 仍待生产强化）
 - [x] 基础角色面板（HP/MP/EXP/等级/称号）
 - [x] 章节完成判定（综合练习通过 + 章节解锁）
 - [x] 经验值 + 升级系统
@@ -537,7 +537,7 @@ AiConversation (id, hero_id, chapter_number, prompt, response, created_at)
 
 **目标**：Boss 战和装备商店上线，形成完整的「学→练→战→奖励」循环。
 
-- [ ] Boss 战系统（第 5 章已完成 3 组服务端隐藏测试、血条反馈与奖励结算；其余 9 个 Boss 待迁移）
+- [x] Boss 战系统（10 个 Boss 均已完成 3 组服务端隐藏测试、血条反馈与幂等奖励结算）
 - [ ] 战斗动画与 Boss 专属演出
 - [x] 克制操作音效（任务卡、代码运行结果、交易、装备；全局静音与音量持久化）
 - [ ] 装备商店 + 购买/装备（15 件正式装备已实现；Boss 免费掉落、提示药水和重复获取规则仍待 Phase 2）

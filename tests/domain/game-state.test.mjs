@@ -62,3 +62,14 @@ test("boss chapters add the contracted 200 EXP and 300 coins", () => {
   assert.equal(state.hero.totalExp, baseExp + BOSS_EXP_BONUS);
   assert.equal(state.hero.coins, baseCoins + BOSS_COIN_BONUS);
 });
+
+test("completing all chapters settles all ten Boss bonuses exactly once", () => {
+  let state = createGameState("刘老三", 1, "2026-07-17T00:00:00.000Z", "hero-1");
+  for (let chapter = 1; chapter <= 17; chapter += 1) state = completeChapter(state, chapter);
+
+  assert.equal(state.hero.totalExp, 17_300);
+  assert.equal(state.hero.coins, 10_650);
+  assert.equal(state.hero.title, "赤帝之子");
+  assert.equal(state.progress.completedChapters.length, 17);
+  assert.equal(state.progress.currentChapter, 17);
+});
