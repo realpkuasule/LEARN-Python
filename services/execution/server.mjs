@@ -6,7 +6,8 @@ import { runPython } from "./runner.mjs";
 const HOST = env.executionHost;
 const PORT = env.executionPort;
 const MAX_BODY_BYTES = 128_000;
-const MAX_INPUT_LENGTH = 20_000;
+const MAX_CODE_LENGTH = 21_000;
+const MAX_STDIN_LENGTH = 20_000;
 const HTTP_BAD_REQUEST = 400;
 const HTTP_NOT_FOUND = 404;
 const HTTP_PAYLOAD_TOO_LARGE = 413;
@@ -46,8 +47,8 @@ const server = createServer(async (request, response) => {
       sendJson(response, HTTP_BAD_REQUEST, { message: "code must be a non-empty string" });
       return;
     }
-    if (payload.code.length > MAX_INPUT_LENGTH || (payload.stdin?.length ?? 0) > MAX_INPUT_LENGTH) {
-      sendJson(response, HTTP_PAYLOAD_TOO_LARGE, { message: "code and stdin are limited to 20,000 characters" });
+    if (payload.code.length > MAX_CODE_LENGTH || (payload.stdin?.length ?? 0) > MAX_STDIN_LENGTH) {
+      sendJson(response, HTTP_PAYLOAD_TOO_LARGE, { message: "code is limited to 21,000 characters and stdin to 20,000" });
       return;
     }
     sendJson(response, 200, await runPython(payload.code, { stdin: payload.stdin }));

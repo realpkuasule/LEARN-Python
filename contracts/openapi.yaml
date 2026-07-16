@@ -126,8 +126,10 @@
           "location": { "type": "string", "minLength": 1 },
           "region": { "type": "string", "minLength": 1 },
           "isBoss": { "type": "boolean" },
+          "bossName": { "type": "string", "minLength": 1 },
           "rewardExp": { "type": "integer", "minimum": 100 },
-          "rewardCoins": { "type": "integer", "minimum": 50 }
+          "rewardCoins": { "type": "integer", "minimum": 50 },
+          "titleReward": { "type": "string", "minLength": 1 }
         }
       },
       "ChapterDetail": {
@@ -147,13 +149,14 @@
       "Exercise": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "chapterNumber", "title", "instructions", "starterCode"],
+        "required": ["id", "chapterNumber", "title", "instructions", "starterCode", "testCount"],
         "properties": {
           "id": { "type": "string", "pattern": "^chapter-[0-9]{2}-final$" },
           "chapterNumber": { "type": "integer", "minimum": 1, "maximum": 17 },
           "title": { "type": "string", "minLength": 1 },
           "instructions": { "type": "string", "minLength": 1 },
-          "starterCode": { "type": "string", "minLength": 1 }
+          "starterCode": { "type": "string", "minLength": 1 },
+          "testCount": { "type": "integer", "minimum": 1, "maximum": 5, "description": "Number of assessment cases; private inputs and expectations are never exposed." }
         }
       },
       "ExecutionRequest": {
@@ -169,13 +172,15 @@
       "ExecutionResult": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["status", "stdout", "stderr", "durationMs", "message"],
+        "required": ["status", "stdout", "stderr", "durationMs", "message", "testsPassed", "testsTotal"],
         "properties": {
           "status": { "type": "string", "enum": ["passed", "failed", "error", "timeout"] },
           "stdout": { "type": "string", "maxLength": 65536 },
           "stderr": { "type": "string", "maxLength": 65536 },
           "durationMs": { "type": "integer", "minimum": 0, "maximum": 10000 },
-          "message": { "type": "string", "minLength": 1 }
+          "message": { "type": "string", "minLength": 1 },
+          "testsPassed": { "type": "integer", "minimum": 0, "maximum": 5 },
+          "testsTotal": { "type": "integer", "minimum": 1, "maximum": 5 }
         }
       },
       "Problem": {

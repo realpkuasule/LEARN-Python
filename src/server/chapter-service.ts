@@ -3,8 +3,8 @@ import { basename, resolve } from "node:path";
 
 import { CHAPTERS, getChapter, type Chapter, type Exercise } from "../domain/chapter-catalog.ts";
 
-export type ChapterSummary = Omit<Chapter, "sourcePath" | "exercise" | "bossName" | "titleReward">;
-export type PublicExercise = Omit<Exercise, "expectedOutput">;
+export type ChapterSummary = Omit<Chapter, "sourcePath" | "exercise">;
+export type PublicExercise = Exercise;
 export type ChapterDetail = ChapterSummary & {
   readonly contentMarkdown: string;
   readonly exercise: PublicExercise;
@@ -16,8 +16,10 @@ const summarizeChapter = (chapter: Chapter): ChapterSummary => ({
   location: chapter.location,
   region: chapter.region,
   isBoss: chapter.isBoss,
+  bossName: chapter.bossName,
   rewardExp: chapter.rewardExp,
   rewardCoins: chapter.rewardCoins,
+  titleReward: chapter.titleReward,
 });
 
 export const listChapterSummaries = (): readonly ChapterSummary[] => CHAPTERS.map(summarizeChapter);
@@ -36,6 +38,7 @@ export const readChapterDetail = async (chapterNumber: number): Promise<ChapterD
     title: chapter.exercise.title,
     instructions: chapter.exercise.instructions,
     starterCode: chapter.exercise.starterCode,
+    testCount: chapter.exercise.testCount,
   };
   return { ...summarizeChapter(chapter), contentMarkdown, exercise };
 };

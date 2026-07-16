@@ -11,10 +11,14 @@ test("chapter detail is assembled from the catalog and its Markdown source", asy
   assert.equal(detail?.exercise.id, "chapter-01-final");
 });
 
-test("chapter API data never leaks the expected output", async () => {
-  const detail = await readChapterDetail(1);
+test("chapter API data exposes test counts without leaking private assessments", async () => {
+  const detail = await readChapterDetail(5);
 
   assert.equal(Object.hasOwn(detail?.exercise ?? {}, "expectedOutput"), false);
+  assert.equal(Object.hasOwn(detail?.exercise ?? {}, "hiddenTests"), false);
+  assert.equal(detail?.exercise.testCount, 3);
+  assert.equal(detail?.bossName, "条件判断哥布林队长");
+  assert.equal(detail?.titleReward, "条件判断克星");
 });
 
 test("unknown chapters do not trigger filesystem reads", async () => {

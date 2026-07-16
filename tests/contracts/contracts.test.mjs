@@ -25,8 +25,28 @@ test("execution responses expose every UI state required by the design contract"
   const result = contract.components.schemas.ExecutionResult;
 
   assert.deepEqual(result.properties.status.enum, ["passed", "failed", "error", "timeout"]);
-  assert.deepEqual(result.required.sort(), ["durationMs", "message", "status", "stderr", "stdout"]);
+  assert.deepEqual(result.required.sort(), [
+    "durationMs",
+    "message",
+    "status",
+    "stderr",
+    "stdout",
+    "testsPassed",
+    "testsTotal",
+  ]);
+  assert.equal(result.properties.testsPassed.minimum, 0);
+  assert.equal(result.properties.testsTotal.minimum, 1);
   assert.equal(result.additionalProperties, false);
+});
+
+test("chapter exercises publish only the number of assessment cases", async () => {
+  const contract = JSON.parse(await readFile(openApiPath, "utf8"));
+  const exercise = contract.components.schemas.Exercise;
+
+  assert.ok(exercise.required.includes("testCount"));
+  assert.equal(exercise.properties.testCount.minimum, 1);
+  assert.equal(Object.hasOwn(exercise.properties, "hiddenTests"), false);
+  assert.equal(Object.hasOwn(exercise.properties, "expectedOutput"), false);
 });
 
 test("execution requests support bounded source code and standard input", async () => {

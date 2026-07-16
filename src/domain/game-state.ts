@@ -2,9 +2,9 @@ import { getChapter } from "./chapter-catalog.ts";
 
 export const GAME_STATE_VERSION = 2;
 export const DEFAULT_SFX_VOLUME = 0.55;
+export const BOSS_EXP_BONUS = 200;
+export const BOSS_COIN_BONUS = 300;
 const MAX_CHAPTER = 17;
-const BOSS_EXP = 200;
-const BOSS_COINS = 300;
 const MAX_HERO_NAME_LENGTH = 16;
 const STARTING_ATTACK = 15;
 
@@ -132,7 +132,7 @@ export const completeChapter = (state: GameState, chapterNumber: number): GameSt
   const chapter = getChapter(chapterNumber);
   if (!chapter) throw new Error("章节不存在");
 
-  const totalExp = state.hero.totalExp + chapter.rewardExp + (chapter.isBoss ? BOSS_EXP : 0);
+  const totalExp = state.hero.totalExp + chapter.rewardExp + (chapter.isBoss ? BOSS_EXP_BONUS : 0);
   const level = levelForExp(totalExp);
   const completedChapters = [...state.progress.completedChapters, chapterNumber].sort((a, b) => a - b);
 
@@ -143,7 +143,7 @@ export const completeChapter = (state: GameState, chapterNumber: number): GameSt
       totalExp,
       level,
       baseStats: statsForLevel(level),
-      coins: state.hero.coins + chapter.rewardCoins + (chapter.isBoss ? BOSS_COINS : 0),
+      coins: state.hero.coins + chapter.rewardCoins + (chapter.isBoss ? BOSS_COIN_BONUS : 0),
       title: chapter.titleReward ?? state.hero.title,
     },
     progress: {

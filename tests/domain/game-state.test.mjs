@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  BOSS_COIN_BONUS,
+  BOSS_EXP_BONUS,
   canAccessChapter,
   completeChapter,
   createGameState,
@@ -55,6 +57,8 @@ test("boss chapters add the contracted 200 EXP and 300 coins", () => {
 
   const baseExp = (1 + 2 + 3 + 4 + 5) * 100;
   const baseCoins = (1 + 2 + 3 + 4 + 5) * 50;
-  assert.equal(state.hero.totalExp, baseExp + 200);
-  assert.equal(state.hero.coins, baseCoins + 300);
+  assert.equal(BOSS_EXP_BONUS, 200);
+  assert.equal(BOSS_COIN_BONUS, 300);
+  assert.equal(state.hero.totalExp, baseExp + BOSS_EXP_BONUS);
+  assert.equal(state.hero.coins, baseCoins + BOSS_COIN_BONUS);
 });

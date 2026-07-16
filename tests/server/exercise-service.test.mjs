@@ -1,7 +1,15 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
+import { CHAPTERS } from "../../src/domain/chapter-catalog.ts";
+import { getExerciseAssessment } from "../../src/server/exercise-assessments.ts";
 import { executeExercise } from "../../src/server/exercise-service.ts";
+
+test("every published exercise count matches a private server assessment", () => {
+  for (const chapter of CHAPTERS) {
+    assert.equal(getExerciseAssessment(chapter.exercise.id)?.length, chapter.exercise.testCount);
+  }
+});
 
 test("exercise evaluation uses the private expected output", async () => {
   const result = await executeExercise(
@@ -13,6 +21,30 @@ test("exercise evaluation uses the private expected output", async () => {
   );
 
   assert.equal(result.status, "passed");
+  assert.equal(result.testsPassed, 1);
+  assert.equal(result.testsTotal, 1);
+});
+
+test("Boss exercises aggregate private cases without leaking their data", async () => {
+  const calls = [];
+  const outputs = ["继续\n", "错误\n", "胜利\n"];
+  const result = await executeExercise(
+    { exerciseId: "chapter-05-final", code: "def battle_result(boss_hp):\n    return '胜利'" },
+    async (code) => {
+      calls.push(code);
+      return { stdout: outputs[calls.length - 1], stderr: "", durationMs: 10 + calls.length };
+    },
+  );
+
+  assert.equal(calls.length, 3);
+  assert.equal(result.status, "failed");
+  assert.equal(result.testsPassed, 2);
+  assert.equal(result.testsTotal, 3);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
+  assert.match(result.message, /2\/3/);
+  assert.equal(Object.hasOwn(result, "expectedOutput"), false);
+  assert.equal(Object.hasOwn(result, "hiddenTests"), false);
 });
 
 test("unknown exercise ids are rejected before code is run", async () => {

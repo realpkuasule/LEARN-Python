@@ -49,6 +49,87 @@
   font-family: "Noto Sans SC", "PingFang SC", sans-serif;
 }
 
+.boss-status,
+.boss-rewards {
+  border: 3px solid var(--border-dark);
+  background: var(--canvas);
+  margin: 18px 0;
+  padding: 14px;
+}
+
+.boss-status {
+  box-shadow: inset 0 0 0 2px rgb(200 91 91 / 35%);
+}
+
+.boss-status.defeated,
+.boss-rewards.settled {
+  border-color: var(--success);
+  box-shadow: inset 0 0 0 2px rgb(78 159 101 / 30%);
+}
+
+.boss-status-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.boss-status-heading h3 {
+  margin: 4px 0 0;
+}
+
+.boss-status-heading strong {
+  color: var(--error);
+  white-space: nowrap;
+}
+
+.boss-status.defeated .boss-status-heading strong,
+.boss-rewards.settled .boss-status-heading span {
+  color: var(--success);
+}
+
+.boss-health-bar {
+  width: 100%;
+  height: 22px;
+  appearance: none;
+  border: 3px solid var(--border-dark);
+  background: var(--surface);
+  margin-top: 14px;
+}
+
+.boss-health-bar::-webkit-progress-bar {
+  background: var(--surface);
+}
+
+.boss-health-bar::-webkit-progress-value {
+  background: var(--error);
+}
+
+.boss-health-bar::-moz-progress-bar {
+  background: var(--error);
+}
+
+.boss-status p,
+.boss-rewards p {
+  margin: 8px 0 0;
+  color: var(--text-muted);
+}
+
+.boss-reward-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.boss-reward-grid span {
+  border: 2px solid var(--border-dark);
+  background: var(--surface-raised);
+  color: var(--accent);
+  padding: 8px;
+  text-align: center;
+}
+
 .editor-frame {
   overflow: hidden;
   border: 4px solid var(--border-dark);
@@ -115,5 +196,19 @@
 
   .chapter-heading .pixel-button {
     margin-top: 16px;
+  }
+
+  .boss-status-heading {
+    display: block;
+  }
+
+  .boss-status-heading strong,
+  .boss-status-heading span {
+    display: inline-block;
+    margin-top: 8px;
+  }
+
+  .boss-reward-grid {
+    grid-template-columns: 1fr;
   }
 }

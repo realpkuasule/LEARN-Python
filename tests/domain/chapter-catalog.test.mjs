@@ -29,3 +29,13 @@ test("rewards follow the PRD chapter formulas", () => {
     assert.equal(chapter.rewardCoins, chapter.number * 50);
   }
 });
+
+test("chapter five is the first three-case hidden-test Boss contract", () => {
+  const chapterFive = CHAPTERS[4];
+
+  assert.equal(chapterFive.exercise.testCount, 3);
+  assert.equal(Object.hasOwn(chapterFive.exercise, "hiddenTests"), false);
+  assert.equal(Object.hasOwn(chapterFive.exercise, "expectedOutput"), false);
+  assert.match(chapterFive.exercise.instructions, /battle_result\(boss_hp\)/);
+  assert.match(chapterFive.exercise.starterCode, /def battle_result\(boss_hp\):/);
+});

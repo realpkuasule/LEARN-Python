@@ -11,6 +11,8 @@ export interface ExecutionResult {
   readonly stderr: string;
   readonly durationMs: number;
   readonly message: string;
+  readonly testsPassed: number;
+  readonly testsTotal: number;
 }
 
 export const normalizeOutput = (output: string): string => (
@@ -24,13 +26,13 @@ export const normalizeOutput = (output: string): string => (
 
 export const evaluateExecution = (run: RunnerResult, expectedOutput: string): ExecutionResult => {
   if (run.timedOut) {
-    return { ...run, status: "timeout", message: "代码运行超时，检查循环是否有出口。" };
+    return { ...run, status: "timeout", message: "代码运行超时，检查循环是否有出口。", testsPassed: 0, testsTotal: 1 };
   }
   if (run.stderr) {
-    return { ...run, status: "error", message: "Python 报错了，根据错误类型和行号继续排查。" };
+    return { ...run, status: "error", message: "Python 报错了，根据错误类型和行号继续排查。", testsPassed: 0, testsTotal: 1 };
   }
   if (normalizeOutput(run.stdout) !== normalizeOutput(expectedOutput)) {
-    return { ...run, status: "failed", message: "代码已运行，但输出还没有符合任务契约。" };
+    return { ...run, status: "failed", message: "代码已运行，但输出还没有符合任务契约。", testsPassed: 0, testsTotal: 1 };
   }
-  return { ...run, status: "passed", message: "挑战通过，奖励已结算。" };
+  return { ...run, status: "passed", message: "挑战通过，奖励已结算。", testsPassed: 1, testsTotal: 1 };
 };
