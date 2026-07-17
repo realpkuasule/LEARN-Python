@@ -210,6 +210,7 @@
 
 .story-message-list {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   margin: 0;
   padding: 18px 18px 92px;
@@ -218,6 +219,7 @@
 
 .story-message {
   --story-role: var(--accent);
+  min-width: 0;
   width: min(100%, 700px);
 }
 
@@ -289,6 +291,7 @@
 
 .story-bubble-body {
   min-height: 54px;
+  overflow-wrap: anywhere;
   border: 3px solid var(--border-dark);
   border-left: 6px solid var(--story-role);
   box-shadow: 3px 3px 0 var(--border-dark);
@@ -318,6 +321,17 @@
 .story-message-section .story-bubble-body,
 .story-message-recap .story-bubble-body {
   border-color: var(--accent);
+}
+
+.story-message-callout .story-bubble-body {
+  border-color: var(--info);
+  background: #101e33;
+}
+
+.story-message-callout blockquote {
+  border-left: 4px solid var(--info);
+  margin: 0;
+  padding-left: 12px;
 }
 
 .story-message-intro .story-speaker {

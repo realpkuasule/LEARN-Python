@@ -3,7 +3,11 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { CHAPTERS } from "../../src/domain/chapter-catalog.ts";
-import { buildChapterStory, storyMessageUsesTypewriter } from "../../src/domain/chapter-story.ts";
+import {
+  buildChapterStory,
+  storyMessageText,
+  storyMessageUsesTypewriter,
+} from "../../src/domain/chapter-story.ts";
 
 test("story contract turns the document title into a chapter intro kept in the feed", () => {
   const story = buildChapterStory({
@@ -20,7 +24,7 @@ test("story contract turns the document title into a chapter intro kept in the f
   assert.equal(story.messages.filter(({ kind }) => kind === "intro").length, 1);
 });
 
-test("story contract preserves sections, lists, code, tables, and the complete recap", () => {
+test("story contract preserves sections, lists, code, tables, callouts, and the complete recap", () => {
   const story = buildChapterStory({
     number: 1,
     title: "编程为什么重要",
@@ -40,6 +44,8 @@ test("story contract preserves sections, lists, code, tables, and the complete r
       "| --- | --- |",
       "| 勇者 | 100 |",
       "",
+      "> **Prompt 示例**：请解释这段代码。",
+      "",
       "## 本章回顾",
       "",
       "- 代码是精确表达",
@@ -50,16 +56,17 @@ test("story contract preserves sections, lists, code, tables, and the complete r
   assert.ok(story.messages.some(({ kind }) => kind === "list"));
   assert.ok(story.messages.some(({ kind }) => kind === "code"));
   assert.ok(story.messages.some(({ kind }) => kind === "table"));
+  assert.ok(story.messages.some(({ kind }) => kind === "callout"));
   assert.match(story.recapMarkdown, /本章回顾/);
   assert.match(story.recapMarkdown, /AI 会放大表达/);
   assert.ok(story.messages.every(({ markdown }) => markdown.trim().length > 0));
 });
 
 test("only story voices use typewriter pacing", () => {
-  const pacing = ["intro", "section", "narration", "dialogue", "list", "code", "table", "recap"]
+  const pacing = ["intro", "section", "narration", "dialogue", "list", "code", "table", "callout", "recap"]
     .map((kind) => storyMessageUsesTypewriter({ kind }));
 
-  assert.deepEqual(pacing, [false, false, true, true, false, false, false, true]);
+  assert.deepEqual(pacing, [false, false, true, true, false, false, false, false, true]);
 });
 
 test("explicit speaker markers cover every requested story voice", () => {
@@ -104,7 +111,11 @@ test("obvious existing dialogue is assigned to its speaker without author marker
     markdown: [
       "刘老三喊道：\"我准备好了！\"",
       "",
-      "公会会长说：\"先观察，再行动。\"",
+      "你愣了一下：「可我还一行代码都不会写。」",
+      "",
+      "「区别在哪？」你问。",
+      "",
+      "公会会长对你说：\"先观察，再行动。\"",
       "",
       "哥布林队长冷笑：\"你过不去。\"",
       "",
@@ -114,7 +125,7 @@ test("obvious existing dialogue is assigned to its speaker without author marker
     ].join("\n"),
   });
 
-  assert.deepEqual(story.messages.slice(1, 4).map(({ role }) => role), ["hero", "friendly", "hostile"]);
+  assert.deepEqual(story.messages.slice(1, 6).map(({ role }) => role), ["hero", "hero", "hero", "friendly", "hostile"]);
 });
 
 test("quoted book and equipment names remain narration", () => {
@@ -159,5 +170,14 @@ test("all published chapters satisfy the playable story contract", async () => {
     assert.ok(story.messages.length >= 20, `chapter ${chapter.number} has a useful message flow`);
     assert.match(story.recapMarkdown, /本章回顾/, `chapter ${chapter.number} recap`);
     assert.equal(new Set(story.messages.map(({ id }) => id)).size, story.messages.length);
+
+    const dialogue = story.messages.filter(({ kind, section }) => kind === "dialogue" && section === "body");
+    assert.ok(dialogue.length >= 3, `chapter ${chapter.number} has at least three dialogue beats`);
+    assert.ok(new Set(dialogue.map(({ role }) => role)).size >= 2, `chapter ${chapter.number} uses at least two character voices`);
+
+    const longMessage = story.messages
+      .filter(storyMessageUsesTypewriter)
+      .find(({ markdown: messageMarkdown }) => storyMessageText(messageMarkdown).length > 240);
+    assert.equal(longMessage, undefined, `chapter ${chapter.number} keeps every typewriter message within 240 characters`);
   }
 });

@@ -1,7 +1,7 @@
 export const STORY_ROLES = ["narrator", "hero", "friendly", "neutral", "hostile"] as const;
 
 export type StoryRole = (typeof STORY_ROLES)[number];
-export type StoryMessageKind = "intro" | "section" | "narration" | "dialogue" | "list" | "code" | "table" | "recap";
+export type StoryMessageKind = "intro" | "section" | "narration" | "dialogue" | "list" | "code" | "table" | "callout" | "recap";
 
 export interface StoryMessage {
   readonly id: string;
@@ -136,6 +136,11 @@ const inferredDialogue = (
   const hasSpeechVerb = /(?:说|问|喊|吼|咆哮|答|笑|道|嘀咕|低语|开口|叫|一愣|皱起眉|点头|冷笑)/.test(block);
   const hasDialogueColon = /[:：]\s*[\"“「『]/.test(block);
   if (!hasQuotation || (!hasSpeechVerb && !hasDialogueColon)) return undefined;
+  const secondPersonSpeaks = /^你(?:一愣|愣|皱起眉|点头|点了点头|说|问|喊|吼|答|笑|道|嘀咕|低语|开口|叫)/.test(block)
+    || /[\"”」』]你(?:说|问|喊|吼|答|笑|道|嘀咕|低语|开口|叫)/.test(block);
+  if (secondPersonSpeaks) {
+    return { role: "hero", speaker: heroName, kind: "dialogue", markdown: block };
+  }
 
   const candidates = [
     speakerCandidate(block, "hostile", [
@@ -161,6 +166,7 @@ const inferredDialogue = (
 const blockKind = (block: string, inRecap: boolean): StoryMessageKind => {
   if (/^#{2,6}\s+/.test(block)) return inRecap ? "recap" : "section";
   if (/^(?:```|~~~)/.test(block)) return "code";
+  if (/^>\s?/.test(block)) return "callout";
   if (/^(?:[-+*]\s|\d+[.)]\s)/.test(block)) return "list";
   if (/^\|?.+\|.+\n\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?/.test(block)) return "table";
   return inRecap ? "recap" : "narration";
