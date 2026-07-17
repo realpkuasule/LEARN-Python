@@ -3,12 +3,10 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
 
 import { BossEncounter } from "@/components/boss-encounter";
 import { EnvironmentBackdrop } from "@/components/environment-backdrop";
-import { PixelSprite } from "@/components/pixel-sprite";
+import { StoryCourse } from "@/components/story-course";
 import { getBossDialogue } from "@/domain/boss-dialogues";
 import { getChapterHints } from "@/domain/chapter-hints";
 import { HINT_POTION_ID, getEquipment } from "@/domain/equipment";
@@ -100,32 +98,17 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
         <button aria-pressed={mobilePanel === "code"} className="pixel-button secondary" onClick={() => setMobilePanel("code")} type="button">代码挑战</button>
       </nav>
       <article className="course-scroll pixel-panel">
-        <div className={`chapter-scene ${chapter.isBoss ? `battle-${completed ? "passed" : state}` : ""}`}>
-          <EnvironmentBackdrop
-            alt={`第 ${chapter.number} 章地点：${chapter.location}`}
-            priority
-            sizes="(max-width: 1023px) calc(100vw - 52px), 42vw"
-            src={sceneAsset}
-          />
-          {bossSprite && (
-            <PixelSprite
-              alt={`第 ${chapter.number} 章 Boss 像素立绘`}
-              className="chapter-boss-sprite"
-              size={192}
-              sprite={bossSprite}
-            />
-          )}
-        </div>
-        <header className="chapter-heading">
-          <div>
-            <p className="eyebrow">第 {chapter.number} 章 · {chapter.location}</p>
-            <h1>{chapter.title}</h1>
-          </div>
-          <Link className="pixel-button secondary" href="/map">返回地图</Link>
-        </header>
-        <div className="course-prose">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{chapter.contentMarkdown}</ReactMarkdown>
-        </div>
+        <StoryCourse
+          battleState={state}
+          bossSprite={bossSprite}
+          chapter={chapter}
+          completed={completed || state === "passed"}
+          heroAvatarId={game?.hero.avatarId ?? 1}
+          heroName={game?.hero.name ?? "刘老三"}
+          onRequestChallenge={() => setMobilePanel("code")}
+          reducedMotion={game?.settings.reducedMotion ?? false}
+          sceneAsset={sceneAsset}
+        />
       </article>
 
       <aside className="mission-scroll pixel-panel" aria-label="编程挑战">
