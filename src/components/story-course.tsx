@@ -234,10 +234,12 @@ export const StoryCourse = ({
         </div>
         {introPhase !== "hidden" && (
           <section aria-label="章节开场" className={`story-title-card ${introPhase}`}>
-            <p>PYTHON DRAGONQUEST</p>
-            <h1>{story.displayTitle}</h1>
-            <span>{chapter.location}</span>
-            <button className="story-skip-transition" onClick={dismissIntro} type="button">跳过开场</button>
+            <div className="story-title-frame pixel-panel">
+              <p>PYTHON DRAGONQUEST</p>
+              <h1>{story.displayTitle}</h1>
+              <span>{chapter.location}</span>
+              <button className="story-skip-transition" onClick={dismissIntro} type="button">跳过开场</button>
+            </div>
           </section>
         )}
       </div>
