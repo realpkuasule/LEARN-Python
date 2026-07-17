@@ -7,6 +7,7 @@ import { persist } from "zustand/middleware";
 import {
   completeChapter as applyChapterCompletion,
   createGameState,
+  recordAiRequest as applyAiRequest,
   updateAudioSettings as applyAudioSettings,
   updateReducedMotion as applyReducedMotion,
   type AudioSettings,
@@ -28,6 +29,7 @@ interface GameStore {
   readonly createHero: (name: string, avatarId: number) => void;
   readonly completeChapter: (chapterNumber: number) => void;
   readonly recordAttempt: (exerciseId: string) => void;
+  readonly recordAiRequest: () => void;
   readonly purchaseItem: (itemId: string) => void;
   readonly purchaseHintPotion: () => void;
   readonly consumeHintPotion: (exerciseId: string) => void;
@@ -51,6 +53,9 @@ export const useGameStore = create<GameStore>()(
       })),
       recordAttempt: (exerciseId) => set(({ game }) => ({
         game: game ? applyAttempt(game, exerciseId) : null,
+      })),
+      recordAiRequest: () => set(({ game }) => ({
+        game: game ? applyAiRequest(game) : null,
       })),
       purchaseItem: (itemId) => set(({ game }) => ({
         game: game ? applyPurchaseItem(game, itemId) : null,

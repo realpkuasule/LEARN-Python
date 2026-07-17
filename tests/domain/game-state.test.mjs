@@ -7,6 +7,7 @@ import {
   canAccessChapter,
   completeChapter,
   createGameState,
+  recordAiRequest,
   recordAttempt,
   updateAudioSettings,
 } from "../../src/domain/game-state.ts";
@@ -81,6 +82,14 @@ test("one-attempt completion unlocks the speed-run title", () => {
   state = completeChapter(state, 1);
 
   assert.ok(state.achievements.unlockedTitles.includes("速通达人"));
+});
+
+test("fifty successful AI tutor replies unlock the AI title", () => {
+  let state = createGameState("刘老三", 1, "2026-07-16T00:00:00.000Z", "hero-1");
+  for (let request = 0; request < 50; request += 1) state = recordAiRequest(state);
+
+  assert.equal(state.achievements.aiRequests, 50);
+  assert.ok(state.achievements.unlockedTitles.includes("人工智能"));
 });
 
 test("completing all chapters settles all ten Boss bonuses exactly once", () => {

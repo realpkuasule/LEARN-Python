@@ -5,10 +5,12 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { BossEncounter } from "@/components/boss-encounter";
+import { AiSpellbook } from "@/components/ai-spellbook";
 import { EnvironmentBackdrop } from "@/components/environment-backdrop";
 import { StoryCourse } from "@/components/story-course";
 import { getBossDialogue } from "@/domain/boss-dialogues";
 import { getChapterHints } from "@/domain/chapter-hints";
+import type { AiTutorExecutionContext } from "@/domain/ai-tutor";
 import { HINT_POTION_ID, getEquipment } from "@/domain/equipment";
 import { BOSS_COIN_BONUS, BOSS_EXP_BONUS, canAccessChapter } from "@/domain/game-state";
 import { inventoryQuantity } from "@/domain/inventory";
@@ -34,12 +36,14 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const [state, setState] = useState<"idle" | "running" | "passed" | "failed">("idle");
   const [output, setOutput] = useState("尚未运行。写完代码后接受挑战吧。");
   const [testsPassed, setTestsPassed] = useState(0);
+  const [executionContext, setExecutionContext] = useState<AiTutorExecutionContext>();
   const [encounterComplete, setEncounterComplete] = useState(!chapter.isBoss);
   const [mobilePanel, setMobilePanel] = useState<"course" | "code">("course");
   const game = useGameStore(({ game }) => game);
   const hydrated = useGameStore(({ hydrated }) => hydrated);
   const completeChapter = useGameStore(({ completeChapter }) => completeChapter);
   const recordAttempt = useGameStore(({ recordAttempt }) => recordAttempt);
+  const recordAiRequest = useGameStore(({ recordAiRequest }) => recordAiRequest);
   const consumeHintPotion = useGameStore(({ consumeHintPotion }) => consumeHintPotion);
   const completed = game?.progress.completedChapters.includes(chapter.number) ?? false;
   const bossSprite = bossSpriteAsset(chapter.number);
@@ -70,14 +74,18 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
       const result = await submitExecution({ exerciseId: chapter.exercise.id, code, stdin });
       setTestsPassed(result.testsPassed);
       const detail = [result.message, result.stdout && `\n输出：\n${result.stdout}`, result.stderr && `\n错误：\n${result.stderr}`].filter(Boolean).join("");
-      setOutput(`${detail}\n耗时：${result.durationMs}ms`);
+      const executionMessage = `${detail}\n耗时：${result.durationMs}ms`;
+      setOutput(executionMessage);
+      setExecutionContext({ status: result.status, message: executionMessage });
       setState(result.status === "passed" ? "passed" : "failed");
       if (game) playSound(result.status === "passed" ? (chapter.isBoss ? "quest-unlock" : "code-success") : "code-error", game.settings);
       if (result.status === "passed") completeChapter(chapter.number);
     } catch (error) {
+      const message = error instanceof Error ? error.message : "运行失败，请稍后重试。";
       setState("failed");
       if (game) playSound("code-error", game.settings);
-      setOutput(error instanceof Error ? error.message : "运行失败，请稍后重试。");
+      setOutput(message);
+      setExecutionContext({ status: "error", message });
     }
   };
 
@@ -236,6 +244,15 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
           </>
         )}
       </aside>
+      <AiSpellbook
+        aiRequestCount={game?.achievements.aiRequests ?? 0}
+        chapterCompleted={completed || state === "passed"}
+        chapterNumber={chapter.number}
+        code={code}
+        execution={executionContext}
+        exerciseId={chapter.exercise.id}
+        onReplyComplete={recordAiRequest}
+      />
     </main>
   );
 };

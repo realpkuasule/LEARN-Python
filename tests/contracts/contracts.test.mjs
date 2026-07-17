@@ -5,12 +5,13 @@ import test from "node:test";
 const openApiPath = new URL("../../contracts/openapi.yaml", import.meta.url);
 const gameStatePath = new URL("../../contracts/game-state.schema.json", import.meta.url);
 
-test("OpenAPI contract declares the complete Phase 1 boundary", async () => {
+test("OpenAPI contract declares the published API boundary", async () => {
   const contract = JSON.parse(await readFile(openApiPath, "utf8"));
   const paths = contract.paths;
 
   assert.equal(contract.openapi, "3.1.0");
   assert.deepEqual(Object.keys(paths).sort(), [
+    "/api/ai/tutor",
     "/api/chapters",
     "/api/chapters/{chapterNumber}",
     "/api/executions",
@@ -18,6 +19,29 @@ test("OpenAPI contract declares the complete Phase 1 boundary", async () => {
   ]);
   assert.equal(paths["/api/executions"].post.operationId, "executeExercise");
   assert.ok(paths["/api/executions"].post.responses["503"]);
+});
+
+test("AI tutor contract streams bounded chapter context without choosing a provider", async () => {
+  const contract = JSON.parse(await readFile(openApiPath, "utf8"));
+  const operation = contract.paths["/api/ai/tutor"].post;
+  const request = contract.components.schemas.AiTutorRequest;
+  const event = contract.components.schemas.AiTutorEvent;
+  const eventReferences = event.oneOf.map((item) => item.$ref);
+
+  assert.equal(operation.operationId, "streamAiTutorReply");
+  assert.ok(operation.responses["200"].content["text/event-stream"]);
+  assert.deepEqual(request.required.sort(), ["chapterCompleted", "chapterNumber", "code", "exerciseId", "question"]);
+  assert.equal(request.properties.question.maxLength, 2_000);
+  assert.equal(request.properties.code.maxLength, 20_000);
+  assert.equal(request.additionalProperties, false);
+  assert.deepEqual(eventReferences, [
+    "#/components/schemas/AiTutorMetaEvent",
+    "#/components/schemas/AiTutorDeltaEvent",
+    "#/components/schemas/AiTutorDoneEvent",
+    "#/components/schemas/AiTutorErrorEvent",
+  ]);
+  assert.deepEqual(contract.components.schemas.AiTutorMetaEvent.properties.mode.enum, ["tutor", "collaborate"]);
+  assert.equal(contract.components.schemas.AiTutorDeltaEvent.properties.type.const, "delta");
 });
 
 test("execution responses expose every UI state required by the design contract", async () => {
