@@ -197,7 +197,7 @@ export const StoryCourse = ({
             data-side={currentMessage.role === "hero" ? "right" : "left"}
             key={`${currentMessage.role}-${currentMessage.speaker}`}
           >
-            <StageSpeakerPortrait bossSprite={bossSprite} message={currentMessage} />
+            <StageSpeakerPortrait avatarId={heroAvatarId} bossSprite={bossSprite} message={currentMessage} />
           </div>
         )}
         <header className="story-stage-header">

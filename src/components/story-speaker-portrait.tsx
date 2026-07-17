@@ -1,7 +1,7 @@
 import type { StoryMessage, StoryRole } from "@/domain/chapter-story";
 import {
-  heroMovementSpriteAsset,
   npcMonsterSpriteAsset,
+  portraitSpriteAsset,
   type NpcMonsterSpriteName,
   type SpriteAsset,
 } from "@/lib/game-art-assets";
@@ -62,9 +62,11 @@ export const StoryPortrait = ({
 };
 
 export const StageSpeakerPortrait = ({
+  avatarId,
   bossSprite,
   message,
 }: {
+  readonly avatarId: number;
   readonly bossSprite?: SpriteAsset;
   readonly message: StoryMessage;
 }): React.ReactNode => {
@@ -74,7 +76,7 @@ export const StageSpeakerPortrait = ({
         alt={`${message.speaker} 像素立绘`}
         className="story-stage-character story-stage-hero"
         size={176}
-        sprite={heroMovementSpriteAsset("left")}
+        sprite={portraitSpriteAsset(avatarId)}
       />
     );
   }
