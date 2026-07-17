@@ -82,7 +82,8 @@
   left: auto;
 }
 
-.story-stage-portrait[data-side="left"] > .pixel-sprite {
+.story-stage-portrait[data-side="left"] > .pixel-sprite,
+.story-stage-portrait[data-side="right"] > .pixel-sprite {
   scale: -1 1;
 }
 
