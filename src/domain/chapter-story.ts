@@ -45,6 +45,8 @@ const DEFAULT_SPEAKERS: Readonly<Record<StoryRole, string>> = {
   hostile: "敌对 NPC",
 };
 
+const DEFAULT_HERO_NAME = "刘老三";
+
 const EXPLICIT_ROLE: Readonly<Record<string, StoryRole>> = {
   旁白: "narrator",
   英雄: "hero",
@@ -95,6 +97,17 @@ const titleFromMarkdown = (markdown: string, fallback: string): string => {
 const chapterDisplayTitle = (number: number, title: string): string => {
   const numeral = CHINESE_CHAPTER_NUMBERS[number] ?? String(number);
   return `第${numeral}章：${title}`;
+};
+
+const personalizeHeroName = (markdown: string, heroName: string): string => {
+  if (heroName === DEFAULT_HERO_NAME || !markdown.includes(DEFAULT_HERO_NAME)) return markdown;
+  const titledHeroName = heroName.includes("勇者") ? heroName : `勇者${heroName}`;
+  return markdown
+    .split(/(`[^`\n]+`)/g)
+    .map((part) => part.startsWith("`") ? part : part
+      .replaceAll(`勇者${DEFAULT_HERO_NAME}`, () => titledHeroName)
+      .replaceAll(DEFAULT_HERO_NAME, () => heroName))
+    .join("");
 };
 
 const explicitMessage = (
@@ -152,7 +165,7 @@ const inferredDialogue = (
     speakerCandidate(block, "friendly", [
       "公会会长", "会长", "导师", "铁匠老头", "矮人老板", "老板", "店主", "教授", "学者", "吟游诗人", "药剂师", "牧师", "守卫", "村民",
     ]),
-    speakerCandidate(block, "hero", [heroName, "刘老三", "勇者"]),
+    speakerCandidate(block, "hero", [heroName, DEFAULT_HERO_NAME, "勇者"]),
     speakerCandidate(block, "neutral", ["裁判", "商人", "系统", "路人", "记录员"]),
   ].filter((candidate): candidate is SpeakerMatch => Boolean(candidate));
 
@@ -183,7 +196,7 @@ export const buildChapterStory = ({
   title,
   markdown,
   bossName,
-  heroName = "刘老三",
+  heroName = DEFAULT_HERO_NAME,
 }: BuildChapterStoryInput): ChapterStory => {
   const displayTitle = chapterDisplayTitle(number, titleFromMarkdown(markdown, title));
   const messages: StoryMessage[] = [{
@@ -201,16 +214,17 @@ export const buildChapterStory = ({
     if (/^##\s+本章回顾\s*$/.test(block)) inRecap = true;
 
     const kind = blockKind(block, inRecap);
-    const explicit = explicitMessage(block, heroName);
+    const personalizedBlock = kind === "code" ? block : personalizeHeroName(block, heroName);
+    const explicit = explicitMessage(personalizedBlock, heroName);
     const canInferDialogue = kind === "narration" || kind === "recap";
-    const dialogue = explicit ?? (canInferDialogue ? inferredDialogue(block, heroName, bossName) : undefined);
+    const dialogue = explicit ?? (canInferDialogue ? inferredDialogue(personalizedBlock, heroName, bossName) : undefined);
     const index = messages.length;
     messages.push({
       id: `chapter-${number}-story-${index}`,
       role: dialogue?.role ?? "narrator",
       speaker: dialogue?.speaker ?? DEFAULT_SPEAKERS.narrator,
       kind: dialogue?.kind ?? kind,
-      markdown: dialogue?.markdown ?? block,
+      markdown: dialogue?.markdown ?? personalizedBlock,
       section: inRecap ? "recap" : "body",
     });
   }

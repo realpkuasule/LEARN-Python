@@ -114,6 +114,32 @@ test("explicit hero markers keep the current player's identity", () => {
   assert.equal(story.messages[1]?.speaker, "视觉验收勇者");
 });
 
+test("story prose uses the current hero name without rewriting code examples", () => {
+  const story = buildChapterStory({
+    number: 2,
+    title: "安装与第一个程序",
+    heroName: "视觉验收勇者",
+    markdown: [
+      "[友善NPC: 会长] 「准备好了吗，刘老三？」",
+      "",
+      "勇者刘老三打开角色卡，刘老三看到代码是 `name = \"刘老三\"`。",
+      "",
+      "```python",
+      "print(\"刘老三\")",
+      "```",
+      "",
+      "## 本章回顾",
+      "",
+      "刘老三继续前进。",
+    ].join("\n"),
+  });
+
+  assert.equal(story.messages[1]?.markdown, "「准备好了吗，视觉验收勇者？」");
+  assert.equal(story.messages[2]?.markdown, "视觉验收勇者打开角色卡，视觉验收勇者看到代码是 `name = \"刘老三\"`。");
+  assert.match(story.recapMarkdown, /视觉验收勇者继续前进/);
+  assert.equal(story.messages.find(({ kind }) => kind === "code")?.markdown, "```python\nprint(\"刘老三\")\n```");
+});
+
 test("obvious existing dialogue is assigned to its speaker without author markers", () => {
   const story = buildChapterStory({
     number: 5,

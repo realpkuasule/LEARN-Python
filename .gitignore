@@ -6,6 +6,14 @@
 # tmp
 docs/tmp
 
+# Local OS and art-generation sources
+.DS_Store
+art-source/
+public/assets/**/source/
+public/assets/**/*-source.png
+public/assets/game-art/
+public/assets/art-v2/game-art/*/*-gui-*-v2.png
+
 # Web application build and local state
 node_modules/
 .next/
