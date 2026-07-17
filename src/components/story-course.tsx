@@ -16,8 +16,7 @@ import type { SpriteAsset } from "@/lib/game-art-assets";
 import type { ChapterDetail } from "@/server/chapter-service";
 
 import { EnvironmentBackdrop } from "./environment-backdrop";
-import { PixelAvatar } from "./pixel-avatar";
-import { PixelSprite } from "./pixel-sprite";
+import { StageSpeakerPortrait, StoryPortrait } from "./story-speaker-portrait";
 
 interface StoryCourseProperties {
   readonly battleState: "idle" | "running" | "passed" | "failed";
@@ -49,30 +48,6 @@ const INTRO_HOLD_MS = 2_200;
 const TRANSITION_MS = 380;
 const SCROLL_CHARACTER_INTERVAL = 24;
 
-const roleGlyph = (role: StoryRole): string => ({
-  narrator: "卷",
-  hero: "勇",
-  friendly: "友",
-  neutral: "旅",
-  hostile: "敌",
-})[role];
-
-const StoryPortrait = ({
-  avatarId,
-  bossSprite,
-  role,
-}: {
-  readonly avatarId: number;
-  readonly bossSprite?: SpriteAsset;
-  readonly role: StoryRole;
-}): React.ReactNode => {
-  if (role === "hero") return <PixelAvatar avatarId={avatarId} compact />;
-  if (role === "hostile" && bossSprite) {
-    return <PixelSprite alt="敌对 NPC 像素头像" className="story-role-sprite" size={40} sprite={bossSprite} />;
-  }
-  return <span aria-hidden="true" className="story-role-glyph">{roleGlyph(role)}</span>;
-};
-
 const StoryBubble = ({
   avatarId,
   bossSprite,
@@ -86,7 +61,7 @@ const StoryBubble = ({
 }): React.ReactNode => (
   <li className={`story-message story-message-${message.kind}`} data-role={message.role}>
     <div className="story-speaker">
-      <StoryPortrait avatarId={avatarId} bossSprite={bossSprite} role={message.role} />
+      <StoryPortrait avatarId={avatarId} bossSprite={bossSprite} role={message.role} speaker={message.speaker} />
       <span>
         <small>{ROLE_LABEL[message.role]}</small>
         <strong>{message.speaker}</strong>
@@ -208,26 +183,32 @@ export const StoryCourse = ({
       }}
       tabIndex={0}
     >
-      <div className={`story-stage ${chapter.isBoss ? `battle-${completed ? "passed" : battleState}` : ""}`}>
+      <div className={`story-stage ${currentMessage?.kind === "dialogue" ? "is-dialogue" : ""} ${chapter.isBoss ? `battle-${completed ? "passed" : battleState}` : ""}`}>
         <EnvironmentBackdrop
           alt={`第 ${chapter.number} 章地点：${chapter.location}`}
           priority
           sizes="(max-width: 1023px) calc(100vw - 32px), 42vw"
           src={sceneAsset}
         />
-        {bossSprite && (
-          <PixelSprite
-            alt={`第 ${chapter.number} 章 Boss 像素立绘`}
-            className="chapter-boss-sprite"
-            size={192}
-            sprite={bossSprite}
-          />
+        {currentMessage && (
+          <div
+            className="story-stage-portrait"
+            data-role={currentMessage.role}
+            data-side={currentMessage.role === "hero" ? "right" : "left"}
+            key={`${currentMessage.role}-${currentMessage.speaker}`}
+          >
+            <StageSpeakerPortrait bossSprite={bossSprite} message={currentMessage} />
+          </div>
         )}
         <header className="story-stage-header">
           <span>第 {chapter.number} 章 · {chapter.location}</span>
           <Link className="story-map-link" href="/map">返回地图</Link>
         </header>
-        <div className="story-stage-speaker" data-role={currentMessage?.role ?? "narrator"}>
+        <div
+          className="story-stage-speaker"
+          data-role={currentMessage?.role ?? "narrator"}
+          data-side={currentMessage?.role === "hero" ? "right" : "left"}
+        >
           <span>{ROLE_LABEL[currentMessage?.role ?? "narrator"]}</span>
           <strong>{currentMessage?.speaker ?? "冒险主持人"}</strong>
           <small>{storyComplete ? "故事段落已读完" : `${Math.min(completedCount + 1, story.messages.length)} / ${story.messages.length}`}</small>
@@ -238,46 +219,48 @@ export const StoryCourse = ({
               <p>PYTHON DRAGONQUEST</p>
               <h1>{story.displayTitle}</h1>
               <span>{chapter.location}</span>
-              <button className="story-skip-transition" onClick={dismissIntro} type="button">跳过开场</button>
             </div>
           </section>
         )}
       </div>
 
-      <div className="story-feed" aria-label="课程故事信息流" ref={feed}>
-        <div className="story-feed-toolbar">
-          <p><strong>冒险记录</strong><span>逐段推进 · 点击可补全当前文字</span></p>
-          {!storyComplete && <button className="story-text-button" onClick={revealAll} type="button">显示全部</button>}
-        </div>
-        <ol className="story-message-list">
-          {story.messages.slice(0, completedCount).map((message) => (
-            <StoryBubble avatarId={heroAvatarId} bossSprite={bossSprite} key={message.id} message={message} />
-          ))}
-          {currentMessage && (
-            <StoryBubble
-              avatarId={heroAvatarId}
-              bossSprite={bossSprite}
-              message={currentMessage}
-              typingText={isTyping ? currentText.slice(0, typedLength) : undefined}
-            />
+      <div className="story-feed" aria-label="课程故事信息流">
+        <div className="story-feed-scroll" ref={feed}>
+          <div className="story-feed-toolbar">
+            <p><strong>冒险记录</strong><span>逐段推进 · 点击可补全当前文字</span></p>
+            {!storyComplete && <button className="story-text-button" onClick={revealAll} type="button">显示全部</button>}
+          </div>
+          <ol className="story-message-list">
+            {story.messages.slice(0, completedCount).map((message) => (
+              <StoryBubble avatarId={heroAvatarId} bossSprite={bossSprite} key={message.id} message={message} />
+            ))}
+            {currentMessage && (
+              <StoryBubble
+                avatarId={heroAvatarId}
+                bossSprite={bossSprite}
+                message={currentMessage}
+                typingText={isTyping ? currentText.slice(0, typedLength) : undefined}
+              />
+            )}
+          </ol>
+          {!currentMessage && (
+            <footer className="story-feed-ending">
+              <p>本章故事已写入冒险记录。完成右侧代码挑战后，即可解锁下一段旅程。</p>
+              {completed ? (
+                <Link className="pixel-button" href={nextHref}>{nextLabel}</Link>
+              ) : (
+                <button aria-describedby="next-chapter-lock" className="pixel-button" disabled type="button">{nextLabel}</button>
+              )}
+              {!completed && <small id="next-chapter-lock">完成代码挑战后解锁</small>}
+              {!completed && <button className="pixel-button secondary" onClick={requestChallenge} type="button">前往代码挑战</button>}
+            </footer>
           )}
-        </ol>
-        {currentMessage ? (
+        </div>
+        {currentMessage && (
           <button className="story-advance" onClick={advance} type="button">
             <span>{isTyping ? "立即显示本段" : "继续"}</span>
             <kbd>{isTyping ? "CLICK" : "ENTER"}</kbd>
           </button>
-        ) : (
-          <footer className="story-feed-ending">
-            <p>本章故事已写入冒险记录。完成右侧代码挑战后，即可解锁下一段旅程。</p>
-            {completed ? (
-              <Link className="pixel-button" href={nextHref}>{nextLabel}</Link>
-            ) : (
-              <button aria-describedby="next-chapter-lock" className="pixel-button" disabled type="button">{nextLabel}</button>
-            )}
-            {!completed && <small id="next-chapter-lock">完成代码挑战后解锁</small>}
-            {!completed && <button className="pixel-button secondary" onClick={requestChallenge} type="button">前往代码挑战</button>}
-          </footer>
         )}
       </div>
 

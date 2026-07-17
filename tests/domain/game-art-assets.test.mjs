@@ -8,7 +8,9 @@ import {
   chapterNodeSpriteAsset,
   equipmentSlotSpriteAsset,
   guiSpriteAsset,
+  heroMovementSpriteAsset,
   itemSpriteAsset,
+  npcMonsterSpriteAsset,
   portraitSpriteAsset,
 } from "../../src/lib/game-art-assets.ts";
 
@@ -18,6 +20,11 @@ const BOSS_CHAPTERS = [5, 6, 7, 9, 10, 11, 12, 14, 15, 17];
 const GUI_ICONS = ["coin", "quest", "dragon", "python-rune"];
 const CHAPTER_STATES = ["completed", "current", "available", "locked"];
 const EQUIPMENT_SLOTS = ["weapon", "helmet", "armor", "shield", "accessory", "boots"];
+const HERO_DIRECTIONS = ["left", "right"];
+const NPC_MONSTERS = [
+  "guild-master", "blacksmith", "veteran", "young-hero", "sage", "bard", "scholar",
+  "alchemist", "slime", "goblin", "skeleton", "wolf", "ice-slime", "rune-dragon",
+];
 
 const spriteCoordinates = (asset) => ({
   sheetWidth: asset.sheetWidth,
@@ -53,6 +60,14 @@ test("v2 sprite mappings are stable and match the game domain", () => {
   assert.throws(() => portraitSpriteAsset(1.5), RangeError);
   assert.throws(() => portraitSpriteAsset(11), RangeError);
 
+  assert.equal(heroMovementSpriteAsset("left").index, 4);
+  assert.equal(heroMovementSpriteAsset("right").index, 7);
+
+  assert.equal(npcMonsterSpriteAsset("guild-master").index, 0);
+  assert.equal(npcMonsterSpriteAsset("alchemist").index, 7);
+  assert.equal(npcMonsterSpriteAsset("slime").index, 8);
+  assert.equal(npcMonsterSpriteAsset("rune-dragon").index, 13);
+
   assert.equal(itemSpriteAsset("wood-sword").index, 1);
   assert.equal(itemSpriteAsset("list-sword").index, 10);
   assert.equal(itemSpriteAsset("second-run-proof").index, 15);
@@ -75,6 +90,8 @@ test("v2 sprite mappings are stable and match the game domain", () => {
 test("both themes expose matching RGBA sprite sheets", async () => {
   const assetsByTheme = THEMES.map((theme) => [
     ...Array.from({ length: 10 }, (_, index) => portraitSpriteAsset(index + 1, theme)),
+    ...HERO_DIRECTIONS.map((direction) => heroMovementSpriteAsset(direction, theme)),
+    ...NPC_MONSTERS.map((name) => npcMonsterSpriteAsset(name, theme)),
     ...EQUIPMENT.map(({ id }) => itemSpriteAsset(id, theme)),
     ...BOSS_CHAPTERS.map((chapter) => bossSpriteAsset(chapter, theme)),
     ...GUI_ICONS.map((name) => guiSpriteAsset(name, theme)),

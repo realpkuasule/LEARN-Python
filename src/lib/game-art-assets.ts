@@ -3,7 +3,25 @@ import type { ChapterViewState } from "../domain/map-view.ts";
 
 export type ArtTheme = "european" | "chinese";
 
+export type HeroMovementDirection = "left" | "right";
+
 export type GuiSpriteName = "coin" | "quest" | "dragon" | "python-rune";
+
+export type NpcMonsterSpriteName =
+  | "guild-master"
+  | "blacksmith"
+  | "veteran"
+  | "young-hero"
+  | "sage"
+  | "bard"
+  | "scholar"
+  | "alchemist"
+  | "slime"
+  | "goblin"
+  | "skeleton"
+  | "wolf"
+  | "ice-slime"
+  | "rune-dragon";
 
 export interface SpriteAsset {
   readonly src: string;
@@ -16,7 +34,7 @@ export interface SpriteAsset {
 
 interface SpriteSheet {
   readonly group: "game-art" | "gui";
-  readonly name: "portraits" | "bosses" | "items" | "gui-icons" | "gui-controls";
+  readonly name: "hero-movement" | "portraits" | "npc-monsters" | "bosses" | "items" | "gui-icons" | "gui-controls";
   readonly width: number;
   readonly height: number;
   readonly columns: number;
@@ -26,7 +44,9 @@ interface SpriteSheet {
 const DEFAULT_THEME: ArtTheme = "european";
 
 const SHEETS = {
+  heroMovement: { group: "game-art", name: "hero-movement", width: 1086, height: 1448, columns: 3, rows: 4 },
   portraits: { group: "game-art", name: "portraits", width: 1672, height: 941, columns: 5, rows: 2 },
+  npcMonsters: { group: "game-art", name: "npc-monsters", width: 1254, height: 1254, columns: 4, rows: 4 },
   bosses: { group: "game-art", name: "bosses", width: 1672, height: 941, columns: 5, rows: 2 },
   items: { group: "game-art", name: "items", width: 1254, height: 1254, columns: 4, rows: 4 },
   icons: { group: "gui", name: "gui-icons", width: 1254, height: 1254, columns: 4, rows: 4 },
@@ -63,6 +83,28 @@ const BOSS_INDEX: Readonly<Record<number, number>> = {
   14: 7,
   15: 8,
   17: 9,
+};
+
+const NPC_MONSTER_INDEX: Readonly<Record<NpcMonsterSpriteName, number>> = {
+  "guild-master": 0,
+  blacksmith: 1,
+  veteran: 2,
+  "young-hero": 3,
+  sage: 4,
+  bard: 5,
+  scholar: 6,
+  alchemist: 7,
+  slime: 8,
+  goblin: 9,
+  skeleton: 10,
+  wolf: 11,
+  "ice-slime": 12,
+  "rune-dragon": 13,
+};
+
+const HERO_MOVEMENT_INDEX: Readonly<Record<HeroMovementDirection, number>> = {
+  left: 4,
+  right: 7,
 };
 
 const GUI_ICON_INDEX: Readonly<Record<GuiSpriteName, number>> = {
@@ -111,6 +153,16 @@ export const portraitSpriteAsset = (
   avatarId: number,
   theme: ArtTheme = DEFAULT_THEME,
 ): SpriteAsset => spriteAsset(SHEETS.portraits, avatarId - 1, theme);
+
+export const heroMovementSpriteAsset = (
+  direction: HeroMovementDirection,
+  theme: ArtTheme = DEFAULT_THEME,
+): SpriteAsset => spriteAsset(SHEETS.heroMovement, HERO_MOVEMENT_INDEX[direction], theme);
+
+export const npcMonsterSpriteAsset = (
+  name: NpcMonsterSpriteName,
+  theme: ArtTheme = DEFAULT_THEME,
+): SpriteAsset => spriteAsset(SHEETS.npcMonsters, NPC_MONSTER_INDEX[name], theme);
 
 export const itemSpriteAsset = (
   itemId: string,
