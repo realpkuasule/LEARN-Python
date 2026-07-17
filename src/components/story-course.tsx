@@ -5,7 +5,13 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
-import { buildChapterStory, storyMessageText, type StoryMessage, type StoryRole } from "@/domain/chapter-story";
+import {
+  buildChapterStory,
+  storyMessageText,
+  storyMessageUsesTypewriter,
+  type StoryMessage,
+  type StoryRole,
+} from "@/domain/chapter-story";
 import type { SpriteAsset } from "@/lib/game-art-assets";
 import type { ChapterDetail } from "@/server/chapter-service";
 
@@ -127,10 +133,11 @@ export const StoryCourse = ({
   const nextLabel = chapter.number < 17 ? "前往下一章" : "查看通关角色卡";
   const currentMessage = story.messages[completedCount];
   const currentText = currentMessage ? storyMessageText(currentMessage.markdown) : "";
-  const typedLength = currentMessage && typing.messageId === currentMessage.id
-    ? typing.length
-    : reducedMotion ? currentText.length : 0;
-  const isTyping = Boolean(currentMessage && typedLength < currentText.length);
+  const typewriterEnabled = Boolean(currentMessage && !reducedMotion && storyMessageUsesTypewriter(currentMessage));
+  const typedLength = typewriterEnabled
+    ? currentMessage && typing.messageId === currentMessage.id ? typing.length : 0
+    : currentText.length;
+  const isTyping = typewriterEnabled && typedLength < currentText.length;
   const storyComplete = completedCount >= story.messages.length;
   const scrollStep = Math.floor(typedLength / SCROLL_CHARACTER_INTERVAL);
 
@@ -249,7 +256,7 @@ export const StoryCourse = ({
               avatarId={heroAvatarId}
               bossSprite={bossSprite}
               message={currentMessage}
-              typingText={currentText.slice(0, typedLength)}
+              typingText={isTyping ? currentText.slice(0, typedLength) : undefined}
             />
           )}
         </ol>

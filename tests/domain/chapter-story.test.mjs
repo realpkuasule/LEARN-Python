@@ -3,7 +3,7 @@ import { readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { CHAPTERS } from "../../src/domain/chapter-catalog.ts";
-import { buildChapterStory } from "../../src/domain/chapter-story.ts";
+import { buildChapterStory, storyMessageUsesTypewriter } from "../../src/domain/chapter-story.ts";
 
 test("story contract turns the document title into a chapter intro kept in the feed", () => {
   const story = buildChapterStory({
@@ -20,7 +20,7 @@ test("story contract turns the document title into a chapter intro kept in the f
   assert.equal(story.messages.filter(({ kind }) => kind === "intro").length, 1);
 });
 
-test("story contract preserves sections, lists, code, and the complete recap", () => {
+test("story contract preserves sections, lists, code, tables, and the complete recap", () => {
   const story = buildChapterStory({
     number: 1,
     title: "编程为什么重要",
@@ -36,6 +36,10 @@ test("story contract preserves sections, lists, code, and the complete recap", (
       "print('出发')",
       "```",
       "",
+      "| 角色 | HP |",
+      "| --- | --- |",
+      "| 勇者 | 100 |",
+      "",
       "## 本章回顾",
       "",
       "- 代码是精确表达",
@@ -45,9 +49,17 @@ test("story contract preserves sections, lists, code, and the complete recap", (
 
   assert.ok(story.messages.some(({ kind }) => kind === "list"));
   assert.ok(story.messages.some(({ kind }) => kind === "code"));
+  assert.ok(story.messages.some(({ kind }) => kind === "table"));
   assert.match(story.recapMarkdown, /本章回顾/);
   assert.match(story.recapMarkdown, /AI 会放大表达/);
   assert.ok(story.messages.every(({ markdown }) => markdown.trim().length > 0));
+});
+
+test("only story voices use typewriter pacing", () => {
+  const pacing = ["intro", "section", "narration", "dialogue", "list", "code", "table", "recap"]
+    .map((kind) => storyMessageUsesTypewriter({ kind }));
+
+  assert.deepEqual(pacing, [false, false, true, true, false, false, false, true]);
 });
 
 test("explicit speaker markers cover every requested story voice", () => {

@@ -1,7 +1,7 @@
 export const STORY_ROLES = ["narrator", "hero", "friendly", "neutral", "hostile"] as const;
 
 export type StoryRole = (typeof STORY_ROLES)[number];
-export type StoryMessageKind = "intro" | "section" | "narration" | "dialogue" | "list" | "code" | "recap";
+export type StoryMessageKind = "intro" | "section" | "narration" | "dialogue" | "list" | "code" | "table" | "recap";
 
 export interface StoryMessage {
   readonly id: string;
@@ -162,8 +162,12 @@ const blockKind = (block: string, inRecap: boolean): StoryMessageKind => {
   if (/^#{2,6}\s+/.test(block)) return inRecap ? "recap" : "section";
   if (/^(?:```|~~~)/.test(block)) return "code";
   if (/^(?:[-+*]\s|\d+[.)]\s)/.test(block)) return "list";
+  if (/^\|?.+\|.+\n\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)+\|?/.test(block)) return "table";
   return inRecap ? "recap" : "narration";
 };
+
+export const storyMessageUsesTypewriter = ({ kind }: Pick<StoryMessage, "kind">): boolean =>
+  kind === "narration" || kind === "dialogue" || kind === "recap";
 
 export const buildChapterStory = ({
   number,
