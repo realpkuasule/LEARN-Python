@@ -190,7 +190,7 @@ export const StoryCourse = ({
           sizes="(max-width: 1023px) calc(100vw - 32px), 42vw"
           src={sceneAsset}
         />
-        {currentMessage && (
+        {currentMessage && currentMessage.role !== "narrator" && (
           <div
             className="story-stage-portrait"
             data-role={currentMessage.role}

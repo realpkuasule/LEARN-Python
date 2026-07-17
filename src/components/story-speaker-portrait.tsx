@@ -10,7 +10,6 @@ import { PixelAvatar } from "./pixel-avatar";
 import { PixelSprite } from "./pixel-sprite";
 
 const npcMonsterName = (role: StoryRole, speaker: string): NpcMonsterSpriteName => {
-  if (role === "narrator") return "sage";
   if (role === "friendly") {
     if (/铁匠|矮人/.test(speaker)) return "blacksmith";
     if (/吟游/.test(speaker)) return "bard";
@@ -38,7 +37,7 @@ const storyActorSprite = (
   role: StoryRole,
   speaker: string,
   bossSprite?: SpriteAsset,
-): SpriteAsset | undefined => role === "hero"
+): SpriteAsset | undefined => role === "hero" || role === "narrator"
   ? undefined
   : role === "hostile" && bossSprite
     ? bossSprite
