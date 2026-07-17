@@ -97,7 +97,10 @@ const chapterDisplayTitle = (number: number, title: string): string => {
   return `第${numeral}章：${title}`;
 };
 
-const explicitMessage = (block: string): Pick<StoryMessage, "role" | "speaker" | "kind" | "markdown"> | undefined => {
+const explicitMessage = (
+  block: string,
+  heroName: string,
+): Pick<StoryMessage, "role" | "speaker" | "kind" | "markdown"> | undefined => {
   const match = block.match(/^(?:\[|【)(旁白|英雄|友善NPC|中立NPC|敌对NPC)(?:(?:\s*[:：]\s*)([^\]】]+))?(?:\]|】)\s*/);
   if (!match) return undefined;
 
@@ -107,7 +110,7 @@ const explicitMessage = (block: string): Pick<StoryMessage, "role" | "speaker" |
   if (!markdown) return undefined;
   return {
     role,
-    speaker: match[2]?.trim() || DEFAULT_SPEAKERS[role],
+    speaker: role === "hero" ? heroName : match[2]?.trim() || DEFAULT_SPEAKERS[role],
     kind: role === "narrator" ? "narration" : "dialogue",
     markdown,
   };
@@ -198,7 +201,7 @@ export const buildChapterStory = ({
     if (/^##\s+本章回顾\s*$/.test(block)) inRecap = true;
 
     const kind = blockKind(block, inRecap);
-    const explicit = explicitMessage(block);
+    const explicit = explicitMessage(block, heroName);
     const canInferDialogue = kind === "narration" || kind === "recap";
     const dialogue = explicit ?? (canInferDialogue ? inferredDialogue(block, heroName, bossName) : undefined);
     const index = messages.length;

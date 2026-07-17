@@ -103,6 +103,17 @@ test("explicit speaker markers cover every requested story voice", () => {
   );
 });
 
+test("explicit hero markers keep the current player's identity", () => {
+  const story = buildChapterStory({
+    number: 2,
+    title: "安装与第一个程序",
+    heroName: "视觉验收勇者",
+    markdown: "[英雄: 刘老三] 我准备好了。",
+  });
+
+  assert.equal(story.messages[1]?.speaker, "视觉验收勇者");
+});
+
 test("obvious existing dialogue is assigned to its speaker without author markers", () => {
   const story = buildChapterStory({
     number: 5,
@@ -172,8 +183,12 @@ test("all published chapters satisfy the playable story contract", async () => {
     assert.equal(new Set(story.messages.map(({ id }) => id)).size, story.messages.length);
 
     const dialogue = story.messages.filter(({ kind, section }) => kind === "dialogue" && section === "body");
+    const explicitDialogueCount = [...markdown.matchAll(/^(?:\[|【)(?:英雄|友善NPC|中立NPC|敌对NPC)(?:(?:\s*[:：]\s*)[^\]】]+)?(?:\]|】)\s*/gm)].length;
+    assert.equal(dialogue.length, explicitDialogueCount, `chapter ${chapter.number} explicitly authors every dialogue beat`);
     assert.ok(dialogue.length >= 3, `chapter ${chapter.number} has at least three dialogue beats`);
     assert.ok(new Set(dialogue.map(({ role }) => role)).size >= 2, `chapter ${chapter.number} uses at least two character voices`);
+    assert.ok(dialogue.some(({ role }) => role === "hero"), `chapter ${chapter.number} gives the hero a voice`);
+    assert.ok(dialogue.some(({ role }) => role !== "hero"), `chapter ${chapter.number} gives another character a voice`);
 
     const longMessage = story.messages
       .filter(storyMessageUsesTypewriter)
