@@ -245,7 +245,7 @@ export const storyRunMode = (
   checkpoint?: StoryCheckpoint,
   completed = false,
 ): StoryRunMode => {
-  if (completed || !hasAuthoredCheckpoints) return "formal";
+  if (!hasAuthoredCheckpoints || (completed && !checkpoint)) return "formal";
   if (!checkpoint) return "locked";
   if (checkpoint.requirement === "confirm") return "locked";
   return checkpoint.requirement === "pass" ? "formal" : "practice";

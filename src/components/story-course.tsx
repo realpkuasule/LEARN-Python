@@ -81,7 +81,7 @@ export const StoryCourse = ({
   const progressLimit = storyProgressLimit(story.messages, effectiveCheckpointIds, completed || hasPracticeFeedback);
   const practiceBlocked = progressLimit < story.messages.length && completedCount >= progressLimit;
   const currentMessage = story.messages[completedCount];
-  const activeCheckpoint = practiceBlocked ? currentMessage?.checkpoint : undefined;
+  const activeCheckpoint = currentMessage?.checkpoint;
   const revealLabel = progressLimit < story.messages.length ? "跳到下一检查点" : "显示全部";
   const currentText = currentMessage ? storyMessageText(currentMessage.markdown) : "";
   const typewriterEnabled = Boolean(currentMessage && !reducedMotion && storyMessageUsesTypewriter(currentMessage));

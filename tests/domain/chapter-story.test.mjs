@@ -164,6 +164,17 @@ test("guided runs stay locked until the story reaches a checkpoint", () => {
   assert.equal(storyRunMode(true, undefined, true), "formal");
 });
 
+test("completed chapter replays still follow the checkpoint run mode", () => {
+  assert.equal(
+    storyRunMode(true, { id: "first-run", requirement: "success", instruction: "运行" }, true),
+    "practice",
+  );
+  assert.equal(
+    storyRunMode(true, { id: "final-challenge", requirement: "pass", instruction: "通关" }, true),
+    "formal",
+  );
+});
+
 test("practice feedback never claims an unmet checkpoint was completed", () => {
   const passed = { status: "passed", message: "挑战通过，奖励已结算。" };
 
