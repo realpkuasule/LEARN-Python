@@ -68,6 +68,11 @@ test("all published chapters satisfy the playable story contract", async () => {
     assert.equal(story.messages[0]?.kind, "intro", `chapter ${chapter.number} intro`);
     assert.ok(story.messages.length >= 20, `chapter ${chapter.number} has a useful message flow`);
     assert.match(story.recapMarkdown, /本章回顾/, `chapter ${chapter.number} recap`);
+    assert.equal(
+      story.messages.find(({ markdown: content, section }) => section === "body" && /称号解锁/.test(content)),
+      undefined,
+      `chapter ${chapter.number} keeps title unlocks in the recap`,
+    );
     assert.equal(new Set(story.messages.map(({ id }) => id)).size, story.messages.length);
 
     const dialogue = story.messages.filter(({ kind, section }) => kind === "dialogue" && section === "body");
