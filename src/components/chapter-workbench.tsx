@@ -159,6 +159,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
         ) : (
           <>
         <p className="mission-copy">{chapter.exercise.instructions}</p>
+        <p className="workbench-field-label">Python 代码 <span>必填</span></p>
         <div className="editor-frame" aria-label="Python 代码编辑器">
           <Editor
             height="42vh"
@@ -169,15 +170,22 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
             value={code}
           />
         </div>
-        <label className="mb-2 block text-accent" htmlFor="exercise-stdin">标准输入（可选）</label>
-        <textarea
-          className="pixel-input mb-4 min-h-20 resize-y font-mono"
-          id="exercise-stdin"
-          maxLength={20_000}
-          onChange={(event) => setStdin(event.target.value)}
-          placeholder="如果程序使用 input()，在这里填写输入；多行内容按行提供。"
-          value={stdin}
-        />
+        <details className="stdin-disclosure">
+          <summary>程序使用 <code>input()</code>？填写运行时输入</summary>
+          <div className="stdin-disclosure-body">
+            <label className="workbench-field-label" htmlFor="exercise-stdin">运行时输入 <span>可选</span></label>
+            <p id="exercise-stdin-help">这里不是 Python 代码。每行内容会依次交给一次 <code>input()</code>；当前挑战无需填写。</p>
+            <textarea
+              aria-describedby="exercise-stdin-help"
+              className="pixel-input min-h-20 resize-y font-mono"
+              id="exercise-stdin"
+              maxLength={20_000}
+              onChange={(event) => setStdin(event.target.value)}
+              placeholder={'例如：\n刘老三\n18'}
+              value={stdin}
+            />
+          </div>
+        </details>
         <button className="pixel-button w-full" disabled={!hydrated || !chapterAccessible || state === "running"} onClick={() => void run()} type="button">
           {!hydrated
             ? "读取存档..."
