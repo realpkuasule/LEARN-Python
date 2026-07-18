@@ -8,8 +8,9 @@ import {
   storyCheckpointSatisfied,
   storyMessageText,
   storyMessageUsesTypewriter,
+  storyPracticeResultMessage,
   storyProgressLimit,
-  storyRunIsFormalChallenge,
+  storyRunMode,
 } from "../../src/domain/chapter-story.ts";
 
 test("story contract turns the document title into a chapter intro kept in the feed", () => {
@@ -121,12 +122,21 @@ test("checkpoint requirements distinguish attempts, Python errors, and final pas
   assert.equal(storyCheckpointSatisfied("pass", "passed"), true);
 });
 
-test("guided runs become formal only at the final pass checkpoint", () => {
-  assert.equal(storyRunIsFormalChallenge(false), true);
-  assert.equal(storyRunIsFormalChallenge(true), false);
-  assert.equal(storyRunIsFormalChallenge(true, { id: "first-run", requirement: "success", instruction: "运行" }), false);
-  assert.equal(storyRunIsFormalChallenge(true, { id: "syntax-error", requirement: "error", instruction: "报错" }), false);
-  assert.equal(storyRunIsFormalChallenge(true, { id: "final-challenge", requirement: "pass", instruction: "通关" }), true);
+test("guided runs stay locked until the story reaches a checkpoint", () => {
+  assert.equal(storyRunMode(false), "formal");
+  assert.equal(storyRunMode(true), "locked");
+  assert.equal(storyRunMode(true, { id: "first-run", requirement: "success", instruction: "运行" }), "practice");
+  assert.equal(storyRunMode(true, { id: "syntax-error", requirement: "error", instruction: "报错" }), "practice");
+  assert.equal(storyRunMode(true, { id: "final-challenge", requirement: "pass", instruction: "通关" }), "formal");
+  assert.equal(storyRunMode(true, undefined, true), "formal");
+});
+
+test("practice feedback never claims an unmet checkpoint was completed", () => {
+  const passed = { status: "passed", message: "挑战通过，奖励已结算。" };
+
+  assert.equal(storyPracticeResultMessage(passed, false, false), "代码运行成功，但尚未满足当前实践要求。");
+  assert.equal(storyPracticeResultMessage(passed, true, false), "本次练习符合要求，实践检查点已完成。");
+  assert.equal(storyPracticeResultMessage(passed, true, true), passed.message);
 });
 
 test("only story voices use typewriter pacing", () => {

@@ -5,6 +5,7 @@ export const STORY_ROLES = ["narrator", "hero", "friendly", "neutral", "hostile"
 export type StoryRole = (typeof STORY_ROLES)[number];
 export type StoryMessageKind = "intro" | "section" | "narration" | "dialogue" | "list" | "code" | "table" | "callout" | "checkpoint" | "recap";
 export type StoryCheckpointRequirement = "run" | "success" | "error" | "pass";
+export type StoryRunMode = "locked" | "practice" | "formal";
 
 export interface StoryCheckpoint {
   readonly id: string;
@@ -229,10 +230,25 @@ export const storyCheckpointSatisfied = (
   return status === "passed";
 };
 
-export const storyRunIsFormalChallenge = (
+export const storyRunMode = (
   hasAuthoredCheckpoints: boolean,
   checkpoint?: StoryCheckpoint,
-): boolean => !hasAuthoredCheckpoints || checkpoint?.requirement === "pass";
+  completed = false,
+): StoryRunMode => {
+  if (completed || !hasAuthoredCheckpoints) return "formal";
+  if (!checkpoint) return "locked";
+  return checkpoint.requirement === "pass" ? "formal" : "practice";
+};
+
+export const storyPracticeResultMessage = (
+  result: Pick<ExecutionResult, "status" | "message">,
+  checkpointComplete: boolean,
+  formalChallenge: boolean,
+): string => {
+  if (formalChallenge) return result.message;
+  if (checkpointComplete) return "本次练习符合要求，实践检查点已完成。";
+  return result.status === "passed" ? "代码运行成功，但尚未满足当前实践要求。" : result.message;
+};
 
 export const buildChapterStory = ({
   number,

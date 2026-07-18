@@ -10,7 +10,7 @@ import { EnvironmentBackdrop } from "@/components/environment-backdrop";
 import { StoryCourse } from "@/components/story-course";
 import { getBossDialogue } from "@/domain/boss-dialogues";
 import { getChapterHints } from "@/domain/chapter-hints";
-import { storyCheckpointSatisfied, storyRunIsFormalChallenge, type StoryCheckpoint } from "@/domain/chapter-story";
+import { storyCheckpointSatisfied, storyPracticeResultMessage, storyRunMode, type StoryCheckpoint } from "@/domain/chapter-story";
 import type { AiTutorExecutionContext } from "@/domain/ai-tutor";
 import { HINT_POTION_ID, getEquipment } from "@/domain/equipment";
 import { BOSS_COIN_BONUS, BOSS_EXP_BONUS, canAccessChapter } from "@/domain/game-state";
@@ -52,7 +52,9 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const completed = game?.progress.completedChapters.includes(chapter.number) ?? false;
   const chapterCompleted = completed || assessmentPassed;
   const usesGuidedCheckpoints = chapter.contentMarkdown.includes("[实践检查点:");
-  const isFormalChallenge = storyRunIsFormalChallenge(usesGuidedCheckpoints, activeCheckpoint);
+  const runMode = storyRunMode(usesGuidedCheckpoints, activeCheckpoint, chapterCompleted);
+  const isFormalChallenge = runMode === "formal";
+  const waitingForCheckpoint = runMode === "locked";
   const bossSprite = bossSpriteAsset(chapter.number);
   const hasHiddenBossTests = chapter.isBoss && chapter.exercise.testCount > 1;
   const displayedTestsPassed = chapterCompleted ? chapter.exercise.testCount : testsPassed;
@@ -71,7 +73,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
     : chapterEnvironmentAsset(chapter.number);
 
   const run = async (): Promise<void> => {
-    if (!hydrated || !chapterAccessible) return;
+    if (!hydrated || !chapterAccessible || waitingForCheckpoint) return;
     if (game) playSound(chapter.isBoss ? "dragon-roar" : "code-run", game.settings);
     setState("running");
     setTestsPassed(0);
@@ -82,13 +84,11 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
       const result = await submitExecution({ exerciseId: chapter.exercise.id, code, stdin });
       setTestsPassed(result.testsPassed);
       const checkpointComplete = checkpoint ? storyCheckpointSatisfied(checkpoint.requirement, result.status) : false;
-      const formalPass = result.status === "passed" && storyRunIsFormalChallenge(usesGuidedCheckpoints, checkpoint);
+      const formalPass = result.status === "passed" && isFormalChallenge;
       if (checkpointComplete && checkpoint) {
         setCompletedCheckpointIds((ids) => ids.includes(checkpoint.id) ? ids : [...ids, checkpoint.id]);
       }
-      const resultMessage = result.status === "passed" && !formalPass
-        ? "练习运行成功，实践检查点已完成。"
-        : result.message;
+      const resultMessage = storyPracticeResultMessage(result, checkpointComplete, isFormalChallenge);
       const checkpointMessage = checkpoint && !checkpointComplete
         ? "\n实践检查点尚未完成，请按左侧要求调整代码后重试。"
         : "";
@@ -147,8 +147,8 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
       <aside className="mission-scroll pixel-panel" aria-label="编程挑战">
         <div className="mission-heading">
           <div>
-            <p className="eyebrow">{activeCheckpoint ? "当前实践" : "本章挑战"}</p>
-            <h2>{activeCheckpoint ? "剧情实践检查点" : chapter.exercise.title}</h2>
+            <p className="eyebrow">{activeCheckpoint ? "当前实践" : waitingForCheckpoint ? "等待剧情" : "本章挑战"}</p>
+            <h2>{activeCheckpoint ? "剧情实践检查点" : waitingForCheckpoint ? "实践尚未解锁" : chapter.exercise.title}</h2>
           </div>
           <span className={chapterCompleted ? "status-success" : "muted"}>
             {chapterCompleted ? "已通关" : "待挑战"}
@@ -183,7 +183,8 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
           />
         ) : (
           <>
-        <p className="mission-copy">{activeCheckpoint?.instruction ?? chapter.exercise.instructions}</p>
+        <p className="mission-copy">{activeCheckpoint?.instruction
+          ?? (waitingForCheckpoint ? "继续左侧剧情。到达实践检查点后，这里的运行按钮才会解锁。" : chapter.exercise.instructions)}</p>
         <p className="workbench-field-label">Python 代码 <span>必填</span></p>
         <div className="editor-frame" aria-label="Python 代码编辑器">
           <Editor
@@ -211,11 +212,13 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
             />
           </div>
         </details>
-        <button className="pixel-button w-full" disabled={!hydrated || !chapterAccessible || state === "running"} onClick={() => void run()} type="button">
+        <button className="pixel-button w-full" disabled={!hydrated || !chapterAccessible || waitingForCheckpoint || state === "running"} onClick={() => void run()} type="button">
           {!hydrated
             ? "读取存档..."
             : !chapterAccessible
               ? "章节尚未解锁"
+              : waitingForCheckpoint
+                ? "继续剧情以解锁练习"
               : state === "running"
                 ? "运行中..."
                 : isFormalChallenge
@@ -264,7 +267,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
           </section>
         )}
         {hydrated && game && !chapterAccessible && <p className="status-error">请先完成上一章，再回来挑战这里。</p>}
-        {hydrated && !game && <p className="status-error">当前没有勇者存档；代码仍可运行，但不会结算奖励。</p>}
+        {hydrated && !game && <p className="status-error">当前没有勇者存档；代码练习不会结算奖励。</p>}
         {chapter.number === 17 && chapterCompleted && (
           <section className="final-victory pixel-panel" aria-label="最终通关画面">
             <div className="final-victory-scene">
