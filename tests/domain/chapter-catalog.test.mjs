@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { access } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import test from "node:test";
 
 import { CHAPTERS } from "../../src/domain/chapter-catalog.ts";
@@ -21,6 +21,17 @@ test("every chapter has one unique assessed exercise and an existing Markdown so
     assert.ok(exercise.starterCode.trim());
     await access(new URL(`../../${sourcePath}`, import.meta.url));
   }));
+});
+
+test("chapter two is completed on the website while local Python stays optional", async () => {
+  const chapter = CHAPTERS.find(({ number }) => number === 2);
+  assert.ok(chapter);
+  assert.equal(chapter.title, "第一个 Python 程序");
+  assert.match(chapter.exercise.instructions, /右侧.*Python 代码.*编辑器/);
+
+  const markdown = await readFile(new URL(`../../${chapter.sourcePath}`, import.meta.url), "utf8");
+  assert.match(markdown, /本章所有必做内容都在学习网站完成，无需安装 Python/);
+  assert.match(markdown, /^## 可选扩展：搭建本地 Python 环境$/m);
 });
 
 test("rewards follow the PRD chapter formulas", () => {

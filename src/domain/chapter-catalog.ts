@@ -58,7 +58,7 @@ const chapter = (
 
 export const CHAPTERS: readonly Chapter[] = [
   chapter(1, "编程为什么重要", "冒险者公会", "启程之地", "01-编程为什么重要.md", "写下冒险宣言", "使用 print 输出：我准备好了", "# 用 print() 写下你的冒险宣言\n", { titleReward: "初出茅庐" }),
-  chapter(2, "安装与第一个程序", "训练场", "启程之地", "02-安装与第一个程序.md", "第一行 Python", "使用 print 输出：Hello, Python!", "# 输出你的第一句 Python 咒语\n"),
+  chapter(2, "第一个 Python 程序", "训练场", "启程之地", "02-安装与第一个程序.md", "第一行 Python", "在右侧「Python 代码」编辑器中使用 print 输出：Hello, Python!", "# 输出你的第一句 Python 咒语\n"),
   chapter(3, "变量与数据类型", "角色祭坛", "启程之地", "03-变量与数据类型.md", "创建勇者名字", "把 刘老三 保存到变量 hero_name，再输出变量", "hero_name = \"\"\nprint(hero_name)\n", { titleReward: "史莱姆克星" }),
   chapter(4, "运算符与输入输出", "武器店", "启程之地", "04-运算符与输入输出.md", "计算装备总价", "TRUE 之剑 80 金，FALSE 之盾 120 金，输出总价", "sword_price = 80\nshield_price = 120\n# 输出总价\n"),
   chapter(5, "条件判断", "试炼洞穴", "判断峡谷", "05-条件判断.md", "击败条件判断哥布林队长", "定义 battle_result(boss_hp)：boss_hp 小于等于 0 时返回 胜利，否则返回 继续。系统会运行 3 组隐藏测试，请不要调用函数或 print。", "def battle_result(boss_hp):\n    # 使用 if/else 返回战斗结果\n    pass\n", {
