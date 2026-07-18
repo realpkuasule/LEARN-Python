@@ -65,7 +65,7 @@
   --speaker-enter-x: -18px;
   position: absolute;
   z-index: 2;
-  bottom: -12px;
+  bottom: 4px;
   left: 5%;
   display: flex;
   width: min(176px, 42%);
@@ -74,6 +74,17 @@
   justify-content: center;
   pointer-events: none;
   animation: story-speaker-in 180ms steps(4, end) both;
+}
+
+.story-stage-portrait[data-role="hero"] {
+  width: min(152px, 36%);
+  height: min(152px, 60%);
+}
+
+.story-stage-portrait[data-role="friendly"],
+.story-stage-portrait[data-role="neutral"] {
+  width: min(224px, 48%);
+  height: min(224px, 82%);
 }
 
 .story-stage-portrait[data-side="right"] {
@@ -1118,9 +1129,20 @@
   }
 
   .story-stage-portrait {
-    bottom: -16px;
+    bottom: -2px;
     width: min(118px, 38%);
     height: min(118px, 62%);
+  }
+
+  .story-stage-portrait[data-role="hero"] {
+    width: min(104px, 32%);
+    height: min(104px, 54%);
+  }
+
+  .story-stage-portrait[data-role="friendly"],
+  .story-stage-portrait[data-role="neutral"] {
+    width: min(150px, 45%);
+    height: min(150px, 76%);
   }
 
   .story-stage-speaker small,
