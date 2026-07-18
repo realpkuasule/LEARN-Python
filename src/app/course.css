@@ -77,7 +77,7 @@
 }
 
 .story-stage-portrait[data-role="hero"] {
-  top: 42px;
+  top: 70px;
   bottom: auto;
   width: min(152px, 36%);
   height: min(152px, 60%);
@@ -86,7 +86,7 @@
 
 .story-stage-portrait[data-role="friendly"],
 .story-stage-portrait[data-role="neutral"] {
-  top: 34px;
+  top: 62px;
   bottom: auto;
   width: min(224px, 48%);
   height: min(224px, 82%);
