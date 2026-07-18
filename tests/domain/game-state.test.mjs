@@ -9,22 +9,38 @@ import {
   createGameState,
   recordAiRequest,
   recordAttempt,
+  recordStoryCheckpoint,
   updateAudioSettings,
 } from "../../src/domain/game-state.ts";
 
 test("a new hero starts with the contracted stats and chapter one unlocked", () => {
   const state = createGameState("刘老三", 3, "2026-07-16T00:00:00.000Z", "hero-1");
 
-  assert.equal(state.version, 3);
+  assert.equal(state.version, 4);
   assert.equal(state.hero.level, 1);
   assert.equal(state.hero.totalExp, 0);
   assert.equal(state.hero.coins, 0);
   assert.deepEqual(state.hero.baseStats, { maxHp: 100, maxMp: 50, atk: 15, def: 5 });
   assert.deepEqual(state.settings, { soundEnabled: true, sfxVolume: 0.55, reducedMotion: false });
   assert.deepEqual(state.progress.hintsRevealed, {});
+  assert.deepEqual(state.progress.storyCheckpoints, {});
   assert.deepEqual(state.achievements, { unlockedTitles: [], aiRequests: 0 });
   assert.equal(canAccessChapter(state, 1), true);
   assert.equal(canAccessChapter(state, 2), false);
+});
+
+test("story checkpoints persist idempotently for accessible chapters", () => {
+  const state = createGameState("刘老三", 1, "2026-07-16T00:00:00.000Z", "hero-1");
+  const recorded = recordStoryCheckpoint(state, 1, "exercise-1");
+
+  assert.deepEqual(recorded.progress.storyCheckpoints, { 1: ["exercise-1"] });
+  assert.deepEqual(recordStoryCheckpoint(recorded, 1, "exercise-1"), recorded);
+  assert.throws(() => recordStoryCheckpoint(state, 2, "exercise-1"), /尚未解锁/);
+  assert.throws(() => recordStoryCheckpoint(state, 1, "../invalid"), /检查点/);
+
+  let full = state;
+  for (let checkpoint = 1; checkpoint <= 5; checkpoint += 1) full = recordStoryCheckpoint(full, 1, `checkpoint-${checkpoint}`);
+  assert.throws(() => recordStoryCheckpoint(full, 1, "checkpoint-6"), /数量/);
 });
 
 test("audio preferences update within the contracted volume range", () => {

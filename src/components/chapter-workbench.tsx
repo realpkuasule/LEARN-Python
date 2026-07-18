@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { BossEncounter } from "@/components/boss-encounter";
 import { AiSpellbook } from "@/components/ai-spellbook";
@@ -39,7 +39,6 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const [testsPassed, setTestsPassed] = useState(0);
   const [assessmentPassed, setAssessmentPassed] = useState(false);
   const [activeCheckpoint, setActiveCheckpoint] = useState<StoryCheckpoint>();
-  const [completedCheckpointIds, setCompletedCheckpointIds] = useState<readonly string[]>([]);
   const [executionContext, setExecutionContext] = useState<AiTutorExecutionContext>();
   const [encounterComplete, setEncounterComplete] = useState(!chapter.isBoss);
   const [mobilePanel, setMobilePanel] = useState<"course" | "code">("course");
@@ -47,9 +46,11 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const hydrated = useGameStore(({ hydrated }) => hydrated);
   const completeChapter = useGameStore(({ completeChapter }) => completeChapter);
   const recordAttempt = useGameStore(({ recordAttempt }) => recordAttempt);
+  const recordStoryCheckpoint = useGameStore(({ recordStoryCheckpoint }) => recordStoryCheckpoint);
   const recordAiRequest = useGameStore(({ recordAiRequest }) => recordAiRequest);
   const consumeHintPotion = useGameStore(({ consumeHintPotion }) => consumeHintPotion);
   const completed = game?.progress.completedChapters.includes(chapter.number) ?? false;
+  const completedCheckpointIds = game?.progress.storyCheckpoints[String(chapter.number)] ?? [];
   const chapterCompleted = completed || assessmentPassed;
   const usesGuidedCheckpoints = chapter.contentMarkdown.includes("[实践检查点:");
   const runMode = storyRunMode(usesGuidedCheckpoints, activeCheckpoint, chapterCompleted);
@@ -73,6 +74,12 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
     ? dragonBattleEnvironmentAsset()
     : chapterEnvironmentAsset(chapter.number);
 
+  const changeCheckpoint = useCallback((checkpoint: StoryCheckpoint | undefined): void => {
+    setActiveCheckpoint(checkpoint);
+    if (checkpoint?.requirement === "pass") setCode(chapter.exercise.starterCode);
+    else if (checkpoint?.starterCode) setCode(checkpoint.starterCode);
+  }, [chapter.exercise.starterCode]);
+
   const run = async (): Promise<void> => {
     if (!hydrated || !chapterAccessible || waitingForCheckpoint) return;
     if (game) playSound(chapter.isBoss ? "dragon-roar" : "code-run", game.settings);
@@ -88,9 +95,9 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
       const formalPass = result.status === "passed" && isFormalChallenge;
       const runPassed = result.status === "passed" || (!isFormalChallenge && checkpointComplete);
       if (checkpointComplete && checkpoint) {
-        setCompletedCheckpointIds((ids) => ids.includes(checkpoint.id) ? ids : [...ids, checkpoint.id]);
+        recordStoryCheckpoint(chapter.number, checkpoint.id);
       }
-      const resultMessage = storyPracticeResultMessage(result, checkpointComplete, isFormalChallenge);
+      const resultMessage = storyPracticeResultMessage(result, checkpointComplete, isFormalChallenge, checkpoint?.requirement);
       const checkpointMessage = checkpoint && !checkpointComplete
         ? "\n实践检查点尚未完成，请按左侧要求调整代码后重试。"
         : "";
@@ -139,9 +146,9 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
           hasPracticeFeedback={executionContext !== undefined}
           heroAvatarId={game?.hero.avatarId ?? 1}
           heroName={game?.hero.name ?? "刘老三"}
-          onCheckpointChange={setActiveCheckpoint}
+          onCheckpointChange={changeCheckpoint}
           onCheckpointComplete={(checkpointId) => {
-            setCompletedCheckpointIds((ids) => ids.includes(checkpointId) ? ids : [...ids, checkpointId]);
+            recordStoryCheckpoint(chapter.number, checkpointId);
           }}
           onRequestChallenge={() => setMobilePanel("code")}
           reducedMotion={game?.settings.reducedMotion ?? false}

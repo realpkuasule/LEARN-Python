@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["version", "hero", "progress", "inventory", "achievements", "settings"],
   "properties": {
-    "version": { "const": 3 },
+    "version": { "const": 4 },
     "hero": {
       "type": "object",
       "additionalProperties": false,
@@ -70,7 +70,7 @@
     "progress": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["currentChapter", "completedChapters", "attempts", "hintsRevealed"],
+      "required": ["currentChapter", "completedChapters", "attempts", "hintsRevealed", "storyCheckpoints"],
       "properties": {
         "currentChapter": { "type": "integer", "minimum": 1, "maximum": 17 },
         "completedChapters": {
@@ -85,6 +85,16 @@
         "hintsRevealed": {
           "type": "object",
           "additionalProperties": { "type": "integer", "minimum": 0, "maximum": 3 }
+        },
+        "storyCheckpoints": {
+          "type": "object",
+          "propertyNames": { "pattern": "^(?:[1-9]|1[0-7])$" },
+          "additionalProperties": {
+            "type": "array",
+            "maxItems": 5,
+            "uniqueItems": true,
+            "items": { "type": "string", "pattern": "^[a-z0-9-]{1,64}$" }
+          }
         }
       }
     },

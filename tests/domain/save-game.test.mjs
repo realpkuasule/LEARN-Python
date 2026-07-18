@@ -45,8 +45,20 @@ test("legacy v2 saves add hint and title progress without losing data", () => {
   assert.deepEqual(parseGameState(JSON.stringify(legacy)), state);
 });
 
+test("legacy v3 saves add story checkpoint progress without losing data", () => {
+  const legacyProgress = {
+    currentChapter: state.progress.currentChapter,
+    completedChapters: state.progress.completedChapters,
+    attempts: state.progress.attempts,
+    hintsRevealed: state.progress.hintsRevealed,
+  };
+  const legacy = { ...state, version: 3, progress: legacyProgress };
+
+  assert.deepEqual(parseGameState(JSON.stringify(legacy)), state);
+});
+
 test("imports reject unknown versions and missing required sections", () => {
-  assert.throws(() => parseGameState(JSON.stringify({ ...state, version: 4 })), /版本/);
+  assert.throws(() => parseGameState(JSON.stringify({ ...state, version: 5 })), /版本/);
   const withoutHero = JSON.parse(JSON.stringify(state));
   Reflect.deleteProperty(withoutHero, "hero");
   assert.throws(() => parseGameState(JSON.stringify(withoutHero)), /存档/);
@@ -57,5 +69,9 @@ test("imports enforce the contract's no-unknown-fields rule", () => {
   assert.throws(() => parseGameState(JSON.stringify({
     ...state,
     hero: { ...state.hero, secret: "dragon" },
+  })), /存档/);
+  assert.throws(() => parseGameState(JSON.stringify({
+    ...state,
+    progress: { ...state.progress, storyCheckpoints: { 1: ["exercise-1", "exercise-1"] } },
   })), /存档/);
 });

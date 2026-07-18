@@ -13,6 +13,7 @@ import {
   type AudioSettings,
   type GameState,
   recordAttempt as applyAttempt,
+  recordStoryCheckpoint as applyStoryCheckpoint,
 } from "@/domain/game-state";
 import {
   equipItem as applyEquipItem,
@@ -29,6 +30,7 @@ interface GameStore {
   readonly createHero: (name: string, avatarId: number) => void;
   readonly completeChapter: (chapterNumber: number) => void;
   readonly recordAttempt: (exerciseId: string) => void;
+  readonly recordStoryCheckpoint: (chapterNumber: number, checkpointId: string) => void;
   readonly recordAiRequest: () => void;
   readonly purchaseItem: (itemId: string) => void;
   readonly purchaseHintPotion: () => void;
@@ -53,6 +55,9 @@ export const useGameStore = create<GameStore>()(
       })),
       recordAttempt: (exerciseId) => set(({ game }) => ({
         game: game ? applyAttempt(game, exerciseId) : null,
+      })),
+      recordStoryCheckpoint: (chapterNumber, checkpointId) => set(({ game }) => ({
+        game: game ? applyStoryCheckpoint(game, chapterNumber, checkpointId) : null,
       })),
       recordAiRequest: () => set(({ game }) => ({
         game: game ? applyAiRequest(game) : null,

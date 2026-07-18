@@ -168,7 +168,8 @@ test("practice feedback never claims an unmet checkpoint was completed", () => {
   const passed = { status: "passed", message: "挑战通过，奖励已结算。" };
 
   assert.equal(storyPracticeResultMessage(passed, false, false), "代码运行成功，但尚未满足当前实践要求。");
-  assert.equal(storyPracticeResultMessage(passed, true, false), "本次练习符合要求，实践检查点已完成。");
+  assert.equal(storyPracticeResultMessage(passed, true, false, "success"), "本次练习符合当前运行要求，实践检查点已完成。");
+  assert.equal(storyPracticeResultMessage(passed, true, false, "output"), "代码已产生输出，实践检查点已完成；请对照左侧目标自查结果。");
   assert.equal(storyPracticeResultMessage(passed, true, true), passed.message);
 });
 

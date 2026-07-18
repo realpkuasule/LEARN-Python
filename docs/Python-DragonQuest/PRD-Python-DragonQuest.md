@@ -534,6 +534,7 @@ AiConversation (id, hero_id, chapter_number, prompt, response, created_at)
 - [x] 章节完成判定（综合练习通过 + 章节解锁）
 - [x] 经验值 + 升级系统
 - [x] 存档导出/导入（JSON 文件）
+- [x] 章节实践进度持久化（v4 本地存档；刷新恢复到下一个未完成检查点，兼容迁移 v1-v3）
 - [x] 17 章课程 Markdown 初稿（含 10 个 Boss 的正式挑战契约）
 - [x] 章节内 AI 协作指南初稿（复制到外部 AI 工具使用）
 

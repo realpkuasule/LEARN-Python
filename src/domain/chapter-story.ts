@@ -11,6 +11,7 @@ export interface StoryCheckpoint {
   readonly id: string;
   readonly requirement: StoryCheckpointRequirement;
   readonly instruction: string;
+  readonly starterCode?: string;
 }
 
 export interface StoryMessage {
@@ -58,6 +59,7 @@ const DEFAULT_SPEAKERS: Readonly<Record<StoryRole, string>> = {
 
 const DEFAULT_HERO_NAME = "刘老三";
 const CHECKPOINT_PATTERN = /^\[实践检查点:\s*([a-z0-9-]+)\/(confirm|run|success|output|error|pass)\]\s*\n?([\s\S]+)$/;
+const EXERCISE_SECTION_PATTERN = /^(?:#{2,6}\s+|\*\*)?(?:练习\s*[一二三123]|本章终局挑战|网站 Boss 终局判定|Boss 终局挑战|最终 Boss 挑战)/i;
 
 const EXPLICIT_ROLE: Readonly<Record<string, StoryRole>> = {
   旁白: "narrator",
@@ -98,6 +100,12 @@ const splitMarkdownBlocks = (markdown: string): readonly string[] => {
   }
   flush();
   return blocks;
+};
+
+const pythonCodeFromFence = (block: string): string | undefined => {
+  const match = block.match(/^(```+|~~~+)(?:python|py)?\s*\n([\s\S]*?)\n\1\s*$/i);
+  const code = match?.[2]?.trimEnd();
+  return code ? `${code}\n` : undefined;
 };
 
 const titleFromMarkdown = (markdown: string, fallback: string): string => {
@@ -247,9 +255,11 @@ export const storyPracticeResultMessage = (
   result: Pick<ExecutionResult, "status" | "message">,
   checkpointComplete: boolean,
   formalChallenge: boolean,
+  requirement?: StoryCheckpointRequirement,
 ): string => {
   if (formalChallenge) return result.message;
-  if (checkpointComplete) return "本次练习符合要求，实践检查点已完成。";
+  if (checkpointComplete && requirement === "output") return "代码已产生输出，实践检查点已完成；请对照左侧目标自查结果。";
+  if (checkpointComplete) return "本次练习符合当前运行要求，实践检查点已完成。";
   return result.status === "passed" ? "代码运行成功，但尚未满足当前实践要求。" : result.message;
 };
 
@@ -270,19 +280,26 @@ export const buildChapterStory = ({
     section: "body",
   }];
   let inRecap = false;
+  let checkpointStarterCode: string | undefined;
 
   for (const block of splitMarkdownBlocks(markdown)) {
     if (/^#\s+/.test(block)) continue;
     if (/^##\s+本章回顾\s*$/.test(block)) inRecap = true;
+    if (EXERCISE_SECTION_PATTERN.test(block)) checkpointStarterCode = undefined;
 
     const kind = blockKind(block, inRecap);
+    if (kind === "code") checkpointStarterCode = pythonCodeFromFence(block);
     const personalizedBlock = kind === "code" ? block : personalizeHeroName(block, heroName);
     const checkpointMatch = kind === "checkpoint" ? personalizedBlock.match(CHECKPOINT_PATTERN) : undefined;
     const checkpointMarkdown = checkpointMatch?.[3]?.trim();
-    const checkpoint = checkpointMatch && checkpointMarkdown ? {
+    const checkpointRequirement = checkpointMatch?.[2] as StoryCheckpointRequirement | undefined;
+    const checkpoint = checkpointMatch && checkpointMarkdown && checkpointRequirement ? {
       id: checkpointMatch[1] ?? "checkpoint",
-      requirement: checkpointMatch[2] as StoryCheckpointRequirement,
+      requirement: checkpointRequirement,
       instruction: checkpointMarkdown,
+      ...(checkpointRequirement !== "confirm" && checkpointRequirement !== "pass" && checkpointStarterCode
+        ? { starterCode: checkpointStarterCode }
+        : {}),
     } : undefined;
     const explicit = checkpoint ? undefined : explicitMessage(personalizedBlock, heroName);
     const canInferDialogue = kind === "narration" || kind === "recap";

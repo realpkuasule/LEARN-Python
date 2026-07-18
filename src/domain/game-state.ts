@@ -2,11 +2,12 @@ import { getChapter } from "./chapter-catalog.ts";
 import { addInventoryItem, inventoryQuantity } from "./inventory.ts";
 import { unlockEarnedTitles } from "./titles.ts";
 
-export const GAME_STATE_VERSION = 3;
+export const GAME_STATE_VERSION = 4;
 export const DEFAULT_SFX_VOLUME = 0.55;
 export const BOSS_EXP_BONUS = 200;
 export const BOSS_COIN_BONUS = 300;
 const MAX_CHAPTER = 17;
+const MAX_STORY_CHECKPOINTS_PER_CHAPTER = 5;
 const MAX_HERO_NAME_LENGTH = 16;
 const STARTING_ATTACK = 15;
 
@@ -27,7 +28,7 @@ export interface EquipmentSlots {
 }
 
 export interface GameState {
-  readonly version: 3;
+  readonly version: 4;
   readonly hero: {
     readonly id: string;
     readonly name: string;
@@ -45,6 +46,7 @@ export interface GameState {
     readonly completedChapters: readonly number[];
     readonly attempts: Readonly<Record<string, number>>;
     readonly hintsRevealed: Readonly<Record<string, number>>;
+    readonly storyCheckpoints: Readonly<Record<string, readonly string[]>>;
   };
   readonly inventory: readonly { readonly itemId: string; readonly quantity: number }[];
   readonly achievements: {
@@ -111,7 +113,7 @@ export const createGameState = (
         boots: null,
       },
     },
-    progress: { currentChapter: 1, completedChapters: [], attempts: {}, hintsRevealed: {} },
+    progress: { currentChapter: 1, completedChapters: [], attempts: {}, hintsRevealed: {}, storyCheckpoints: {} },
     inventory: [
       { itemId: "wood-sword", quantity: 1 },
       { itemId: "cloth-armor", quantity: 1 },
@@ -182,6 +184,30 @@ export const recordAttempt = (state: GameState, exerciseId: string): GameState =
     },
   },
 });
+
+export const recordStoryCheckpoint = (
+  state: GameState,
+  chapterNumber: number,
+  checkpointId: string,
+): GameState => {
+  if (!canAccessChapter(state, chapterNumber)) throw new Error("该章节尚未解锁");
+  if (!/^[a-z0-9-]{1,64}$/.test(checkpointId)) throw new Error("实践检查点不存在");
+  const chapterKey = String(chapterNumber);
+  const completed = state.progress.storyCheckpoints[chapterKey] ?? [];
+  if (completed.includes(checkpointId)) return state;
+  if (completed.length >= MAX_STORY_CHECKPOINTS_PER_CHAPTER) throw new Error("实践检查点数量超过限制");
+
+  return {
+    ...state,
+    progress: {
+      ...state.progress,
+      storyCheckpoints: {
+        ...state.progress.storyCheckpoints,
+        [chapterKey]: [...completed, checkpointId],
+      },
+    },
+  };
+};
 
 export const recordAiRequest = (state: GameState): GameState => unlockEarnedTitles({
   ...state,

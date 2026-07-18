@@ -89,7 +89,7 @@ test("execution requests support bounded source code and standard input", async 
 test("local save contract is versioned and rejects unknown fields", async () => {
   const schema = JSON.parse(await readFile(gameStatePath, "utf8"));
 
-  assert.equal(schema.properties.version.const, 3);
+  assert.equal(schema.properties.version.const, 4);
   assert.equal(schema.additionalProperties, false);
   assert.ok(schema.required.includes("achievements"));
   assert.equal(schema.properties.hero.additionalProperties, false);
@@ -97,6 +97,7 @@ test("local save contract is versioned and rejects unknown fields", async () => 
   assert.ok(schema.properties.hero.properties.title.enum.includes(""));
   assert.equal(schema.properties.progress.properties.completedChapters.uniqueItems, true);
   assert.ok(schema.properties.progress.required.includes("hintsRevealed"));
+  assert.ok(schema.properties.progress.required.includes("storyCheckpoints"));
   assert.equal(schema.properties.inventory.maxItems, 20);
   assert.equal(schema.properties.achievements.properties.unlockedTitles.items.enum.length, 16);
   assert.ok(schema.properties.achievements.properties.unlockedTitles.items.enum.includes("人工智能"));

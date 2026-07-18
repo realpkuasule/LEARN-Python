@@ -8,7 +8,8 @@ const LEGACY_TOP_LEVEL_KEYS = ["version", "hero", "progress", "inventory", "sett
 const HERO_KEYS = ["id", "name", "avatarId", "createdAt", "level", "totalExp", "coins", "baseStats", "title", "equipment"] as const;
 const STATS_KEYS = ["maxHp", "maxMp", "atk", "def"] as const;
 const EQUIPMENT_KEYS = ["weapon", "helmet", "armor", "shield", "accessory", "boots"] as const;
-const PROGRESS_KEYS = ["currentChapter", "completedChapters", "attempts", "hintsRevealed"] as const;
+const PROGRESS_KEYS = ["currentChapter", "completedChapters", "attempts", "hintsRevealed", "storyCheckpoints"] as const;
+const VERSION_3_PROGRESS_KEYS = ["currentChapter", "completedChapters", "attempts", "hintsRevealed"] as const;
 const LEGACY_PROGRESS_KEYS = ["currentChapter", "completedChapters", "attempts"] as const;
 const ACHIEVEMENT_KEYS = ["unlockedTitles", "aiRequests"] as const;
 const SETTINGS_KEYS = ["soundEnabled", "sfxVolume", "reducedMotion"] as const;
@@ -16,6 +17,7 @@ const LEGACY_SETTINGS_KEYS = ["soundEnabled", "reducedMotion"] as const;
 const INVENTORY_KEYS = ["itemId", "quantity"] as const;
 const MAX_CHAPTER = 17;
 const MAX_HINTS_PER_EXERCISE = 3;
+const MAX_STORY_CHECKPOINTS_PER_CHAPTER = 5;
 const MAX_INVENTORY_ITEMS = 20;
 const TITLE_NAMES = new Set(TITLES.map(({ name }) => name));
 
@@ -77,12 +79,34 @@ const isLegacyProgress = (value: unknown): value is JsonRecord => (
   isRecord(value) && hasExactKeys(value, LEGACY_PROGRESS_KEYS) && hasValidProgressValues(value)
 );
 
+const hasValidHints = (value: JsonRecord): boolean => (
+  isRecord(value.hintsRevealed)
+  && Object.values(value.hintsRevealed).every((count) => (
+    isIntegerAtLeast(count, 0) && Number(count) <= MAX_HINTS_PER_EXERCISE
+  ))
+);
+
+const isVersion3Progress = (value: unknown): value is JsonRecord => (
+  isRecord(value)
+  && hasExactKeys(value, VERSION_3_PROGRESS_KEYS)
+  && hasValidProgressValues(value)
+  && hasValidHints(value)
+);
+
+const isStoryCheckpoints = (value: unknown): boolean => (
+  isRecord(value)
+  && Object.entries(value).every(([chapter, checkpoints]) => (
+    /^(?:[1-9]|1[0-7])$/.test(chapter)
+    && Array.isArray(checkpoints)
+    && checkpoints.length <= MAX_STORY_CHECKPOINTS_PER_CHAPTER
+    && new Set(checkpoints).size === checkpoints.length
+    && checkpoints.every((checkpoint) => typeof checkpoint === "string" && /^[a-z0-9-]{1,64}$/.test(checkpoint))
+  ))
+);
+
 const isProgress = (value: unknown): boolean => {
   if (!isRecord(value) || !hasExactKeys(value, PROGRESS_KEYS) || !hasValidProgressValues(value)) return false;
-  if (!isRecord(value.hintsRevealed)) return false;
-  return Object.values(value.hintsRevealed).every((count) => (
-    isIntegerAtLeast(count, 0) && Number(count) <= MAX_HINTS_PER_EXERCISE
-  ));
+  return hasValidHints(value) && isStoryCheckpoints(value.storyCheckpoints);
 };
 
 const isInventory = (value: unknown): boolean => (
@@ -139,6 +163,15 @@ const hasValidLegacySections = (value: JsonRecord): boolean => (
   && isInventory(value.inventory)
 );
 
+const hasValidVersion3Sections = (value: JsonRecord): boolean => (
+  hasExactKeys(value, TOP_LEVEL_KEYS)
+  && isHero(value.hero)
+  && isVersion3Progress(value.progress)
+  && isInventory(value.inventory)
+  && isAchievements(value.achievements)
+  && isSettings(value.settings)
+);
+
 const validateSelectedTitle = (state: GameState): GameState => {
   const normalized = unlockEarnedTitles(state);
   if (normalized.hero.title && !normalized.achievements.unlockedTitles.includes(normalized.hero.title)) {
@@ -156,7 +189,9 @@ export const parseGameState = (json: string): GameState => {
   }
 
   if (!isRecord(value)) throw new Error("存档内容不符合当前契约。");
-  if (value.version !== 1 && value.version !== 2 && value.version !== 3) throw new Error("存档版本不受支持。");
+  if (value.version !== 1 && value.version !== 2 && value.version !== 3 && value.version !== 4) {
+    throw new Error("存档版本不受支持。");
+  }
 
   if (value.version === 1 || value.version === 2) {
     if (!hasValidLegacySections(value)) throw new Error("存档内容不符合当前契约。");
@@ -167,12 +202,21 @@ export const parseGameState = (json: string): GameState => {
     const legacySettings = value.settings as JsonRecord;
     return validateSelectedTitle({
       ...value,
-      version: 3,
-      progress: { ...legacyProgress, hintsRevealed: {} },
+      version: 4,
+      progress: { ...legacyProgress, hintsRevealed: {}, storyCheckpoints: {} },
       achievements: { unlockedTitles: [], aiRequests: 0 },
       settings: value.version === 1
         ? { ...legacySettings, sfxVolume: DEFAULT_SFX_VOLUME }
         : legacySettings,
+    } as unknown as GameState);
+  }
+
+  if (value.version === 3) {
+    if (!hasValidVersion3Sections(value)) throw new Error("存档内容不符合当前契约。");
+    return validateSelectedTitle({
+      ...value,
+      version: 4,
+      progress: { ...(value.progress as JsonRecord), storyCheckpoints: {} },
     } as unknown as GameState);
   }
 
