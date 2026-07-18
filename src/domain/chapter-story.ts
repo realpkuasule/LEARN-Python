@@ -1,7 +1,16 @@
+import type { ExecutionResult } from "./execution";
+
 export const STORY_ROLES = ["narrator", "hero", "friendly", "neutral", "hostile"] as const;
 
 export type StoryRole = (typeof STORY_ROLES)[number];
-export type StoryMessageKind = "intro" | "section" | "narration" | "dialogue" | "list" | "code" | "table" | "callout" | "recap";
+export type StoryMessageKind = "intro" | "section" | "narration" | "dialogue" | "list" | "code" | "table" | "callout" | "checkpoint" | "recap";
+export type StoryCheckpointRequirement = "run" | "success" | "error" | "pass";
+
+export interface StoryCheckpoint {
+  readonly id: string;
+  readonly requirement: StoryCheckpointRequirement;
+  readonly instruction: string;
+}
 
 export interface StoryMessage {
   readonly id: string;
@@ -10,6 +19,7 @@ export interface StoryMessage {
   readonly kind: StoryMessageKind;
   readonly markdown: string;
   readonly section: "body" | "recap";
+  readonly checkpoint?: StoryCheckpoint;
 }
 
 export interface ChapterStory {
@@ -46,6 +56,7 @@ const DEFAULT_SPEAKERS: Readonly<Record<StoryRole, string>> = {
 };
 
 const DEFAULT_HERO_NAME = "刘老三";
+const CHECKPOINT_PATTERN = /^\[实践检查点:\s*([a-z0-9-]+)\/(run|success|error|pass)\]\s*\n?([\s\S]+)$/;
 
 const EXPLICIT_ROLE: Readonly<Record<string, StoryRole>> = {
   旁白: "narrator",
@@ -180,6 +191,7 @@ const inferredDialogue = (
 };
 
 const blockKind = (block: string, inRecap: boolean): StoryMessageKind => {
+  if (CHECKPOINT_PATTERN.test(block)) return "checkpoint";
   if (/^#{2,6}\s+/.test(block)) return inRecap ? "recap" : "section";
   if (/^(?:```|~~~)/.test(block)) return "code";
   if (/^>\s?/.test(block)) return "callout";
@@ -193,12 +205,34 @@ export const storyMessageUsesTypewriter = ({ kind }: Pick<StoryMessage, "kind">)
 
 export const storyProgressLimit = (
   messages: readonly StoryMessage[],
+  completedCheckpoints: readonly string[],
   hasPracticeFeedback: boolean,
 ): number => {
+  const authoredCheckpoints = messages.filter(({ checkpoint }) => checkpoint);
+  if (authoredCheckpoints.length > 0) {
+    const completed = new Set(completedCheckpoints);
+    const pending = messages.findIndex(({ checkpoint }) => checkpoint && !completed.has(checkpoint.id));
+    return pending < 0 ? messages.length : pending;
+  }
   if (hasPracticeFeedback) return messages.length;
   const recapIndex = messages.findIndex(({ section }) => section === "recap");
   return recapIndex < 0 ? messages.length : recapIndex;
 };
+
+export const storyCheckpointSatisfied = (
+  requirement: StoryCheckpointRequirement,
+  status: ExecutionResult["status"],
+): boolean => {
+  if (requirement === "run") return true;
+  if (requirement === "success") return status === "passed";
+  if (requirement === "error") return status === "error";
+  return status === "passed";
+};
+
+export const storyRunIsFormalChallenge = (
+  hasAuthoredCheckpoints: boolean,
+  checkpoint?: StoryCheckpoint,
+): boolean => !hasAuthoredCheckpoints || checkpoint?.requirement === "pass";
 
 export const buildChapterStory = ({
   number,
@@ -224,7 +258,14 @@ export const buildChapterStory = ({
 
     const kind = blockKind(block, inRecap);
     const personalizedBlock = kind === "code" ? block : personalizeHeroName(block, heroName);
-    const explicit = explicitMessage(personalizedBlock, heroName);
+    const checkpointMatch = kind === "checkpoint" ? personalizedBlock.match(CHECKPOINT_PATTERN) : undefined;
+    const checkpointMarkdown = checkpointMatch?.[3]?.trim();
+    const checkpoint = checkpointMatch && checkpointMarkdown ? {
+      id: checkpointMatch[1] ?? "checkpoint",
+      requirement: checkpointMatch[2] as StoryCheckpointRequirement,
+      instruction: checkpointMarkdown,
+    } : undefined;
+    const explicit = checkpoint ? undefined : explicitMessage(personalizedBlock, heroName);
     const canInferDialogue = kind === "narration" || kind === "recap";
     const dialogue = explicit ?? (canInferDialogue ? inferredDialogue(personalizedBlock, heroName, bossName) : undefined);
     const index = messages.length;
@@ -233,8 +274,9 @@ export const buildChapterStory = ({
       role: dialogue?.role ?? "narrator",
       speaker: dialogue?.speaker ?? DEFAULT_SPEAKERS.narrator,
       kind: dialogue?.kind ?? kind,
-      markdown: dialogue?.markdown ?? personalizedBlock,
+      markdown: checkpointMarkdown ?? dialogue?.markdown ?? personalizedBlock,
       section: inRecap ? "recap" : "body",
+      checkpoint,
     });
   }
 

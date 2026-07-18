@@ -10,6 +10,7 @@ import {
   storyMessageText,
   storyMessageUsesTypewriter,
   storyProgressLimit,
+  type StoryCheckpoint,
   type StoryMessage,
   type StoryRole,
 } from "@/domain/chapter-story";
@@ -17,16 +18,19 @@ import type { SpriteAsset } from "@/lib/game-art-assets";
 import type { ChapterDetail } from "@/server/chapter-service";
 
 import { EnvironmentBackdrop } from "./environment-backdrop";
+import { StoryPracticeGate, storyCheckpointLabel, storyProgressAnnouncement } from "./story-practice-gate";
 import { StageSpeakerPortrait, StoryPortrait } from "./story-speaker-portrait";
 
 interface StoryCourseProperties {
   readonly battleState: "idle" | "running" | "passed" | "failed";
   readonly bossSprite?: SpriteAsset;
   readonly chapter: ChapterDetail;
+  readonly completedCheckpointIds: readonly string[];
   readonly completed: boolean;
   readonly heroAvatarId: number;
   readonly heroName: string;
   readonly hasPracticeFeedback: boolean;
+  readonly onCheckpointChange: (checkpoint: StoryCheckpoint | undefined) => void;
   readonly onRequestChallenge: () => void;
   readonly reducedMotion: boolean;
   readonly sceneAsset: string;
@@ -86,10 +90,12 @@ export const StoryCourse = ({
   battleState,
   bossSprite,
   chapter,
+  completedCheckpointIds,
   completed,
   heroAvatarId,
   heroName,
   hasPracticeFeedback,
+  onCheckpointChange,
   onRequestChallenge,
   reducedMotion,
   sceneAsset,
@@ -109,17 +115,16 @@ export const StoryCourse = ({
   const introTimer = useRef<number | undefined>(undefined);
   const nextHref = chapter.number < 17 ? `/chapter/${chapter.number + 1}` : "/hero";
   const nextLabel = chapter.number < 17 ? "前往下一章" : "查看通关角色卡";
-  const practiceComplete = completed || hasPracticeFeedback;
-  const progressLimit = storyProgressLimit(story.messages, practiceComplete);
-  const practiceBlocked = !practiceComplete
-    && progressLimit < story.messages.length
-    && completedCount >= progressLimit;
+  const authoredCheckpointIds = story.messages.flatMap(({ checkpoint }) => checkpoint ? [checkpoint.id] : []);
+  const effectiveCheckpointIds = completed ? authoredCheckpointIds : completedCheckpointIds;
+  const progressLimit = storyProgressLimit(story.messages, effectiveCheckpointIds, completed || hasPracticeFeedback);
+  const practiceBlocked = progressLimit < story.messages.length && completedCount >= progressLimit;
   const currentMessage = story.messages[completedCount];
+  const activeCheckpoint = practiceBlocked ? currentMessage?.checkpoint : undefined;
+  const revealLabel = progressLimit < story.messages.length ? "跳到下一检查点" : "显示全部";
   const currentText = currentMessage ? storyMessageText(currentMessage.markdown) : "";
   const typewriterEnabled = Boolean(currentMessage && !reducedMotion && storyMessageUsesTypewriter(currentMessage));
-  const typedLength = typewriterEnabled
-    ? currentMessage && typing.messageId === currentMessage.id ? typing.length : 0
-    : currentText.length;
+  const typedLength = typewriterEnabled ? currentMessage && typing.messageId === currentMessage.id ? typing.length : 0 : currentText.length;
   const isTyping = typewriterEnabled && typedLength < currentText.length;
   const storyComplete = completedCount >= story.messages.length;
   const scrollStep = Math.floor(typedLength / SCROLL_CHARACTER_INTERVAL);
@@ -147,6 +152,10 @@ export const StoryCourse = ({
       top: feed.current.scrollHeight,
     });
   }, [completedCount, reducedMotion, scrollStep]);
+
+  useEffect(() => {
+    onCheckpointChange(activeCheckpoint);
+  }, [activeCheckpoint, onCheckpointChange]);
 
   const dismissIntro = (): void => {
     window.clearTimeout(introTimer.current);
@@ -240,19 +249,19 @@ export const StoryCourse = ({
         <div className="story-feed-scroll" ref={feed}>
           <div className="story-feed-toolbar">
             <p><strong>冒险记录</strong><span>逐段推进 · 点击可补全当前文字</span></p>
-            {!storyComplete && !practiceBlocked && <button className="story-text-button" onClick={revealAll} type="button">显示全部</button>}
+            {!storyComplete && !practiceBlocked && <button className="story-text-button" onClick={revealAll} type="button">{revealLabel}</button>}
           </div>
           <ol className="story-message-list">
             {story.messages.slice(0, completedCount).map((message) => (
               <StoryBubble avatarId={heroAvatarId} bossSprite={bossSprite} key={message.id} message={message} />
             ))}
-            {currentMessage && (practiceBlocked ? (
-              <li className="story-practice-gate" role="status">
-                <p className="eyebrow">实践检查点</p>
-                <strong>先运行一次代码，再进入本章回顾</strong>
-                <p>成功、失败或报错都算有效尝试。收到右侧「冒险日志」反馈后，即可继续阅读。</p>
-                <button className="pixel-button" onClick={requestChallenge} type="button">前往代码挑战</button>
-              </li>
+            {currentMessage && (currentMessage.checkpoint || practiceBlocked ? (
+              <StoryPracticeGate
+                blocked={practiceBlocked}
+                checkpoint={currentMessage.checkpoint}
+                markdown={currentMessage.markdown}
+                onRequestChallenge={requestChallenge}
+              />
             ) : (
               <StoryBubble
                 avatarId={heroAvatarId}
@@ -277,7 +286,9 @@ export const StoryCourse = ({
         </div>
         {currentMessage && (
           <button className="story-advance" onClick={advance} type="button">
-            <span>{practiceBlocked ? "先完成一次运行" : isTyping ? "立即显示本段" : "继续"}</span>
+            <span>{practiceBlocked
+              ? activeCheckpoint ? storyCheckpointLabel(activeCheckpoint) : "先完成一次运行"
+              : isTyping ? "立即显示本段" : "继续"}</span>
             <kbd>{practiceBlocked ? "去挑战" : isTyping ? "CLICK" : "ENTER"}</kbd>
           </button>
         )}
@@ -302,11 +313,7 @@ export const StoryCourse = ({
         </section>
       )}
       <p aria-live="polite" className="sr-only">
-        {storyComplete
-          ? "本章故事已读完"
-          : practiceBlocked
-            ? "实践检查点：运行一次代码并收到反馈后继续"
-            : isTyping ? "正在显示新段落" : "当前段落显示完毕，可以继续"}
+        {storyProgressAnnouncement(storyComplete, practiceBlocked, activeCheckpoint, isTyping)}
       </p>
     </section>
   );

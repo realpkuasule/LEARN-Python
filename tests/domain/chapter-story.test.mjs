@@ -5,9 +5,11 @@ import test from "node:test";
 import { CHAPTERS } from "../../src/domain/chapter-catalog.ts";
 import {
   buildChapterStory,
+  storyCheckpointSatisfied,
   storyMessageText,
   storyMessageUsesTypewriter,
   storyProgressLimit,
+  storyRunIsFormalChallenge,
 } from "../../src/domain/chapter-story.ts";
 
 test("story contract turns the document title into a chapter intro kept in the feed", () => {
@@ -63,24 +65,75 @@ test("story contract preserves sections, lists, code, tables, callouts, and the 
   assert.ok(story.messages.every(({ markdown }) => markdown.trim().length > 0));
 });
 
-test("reveal-all stops before the recap until one code run has returned feedback", () => {
+test("authored practice checkpoints gate reveal-all in document order", () => {
   const story = buildChapterStory({
     number: 2,
     title: "第一个 Python 程序",
+    markdown: [
+      "## 核心讲解",
+      "",
+      "先观察。",
+      "",
+      "[实践检查点: first-run/success]",
+      "运行第一行代码。",
+      "",
+      "继续讲解。",
+      "",
+      "[实践检查点: syntax-error/error]",
+      "观察一次语法错误。",
+      "",
+      "## 本章回顾",
+      "",
+      "再总结。",
+    ].join("\n"),
+  });
+  const checkpoints = story.messages.filter(({ checkpoint }) => checkpoint);
+
+  assert.deepEqual(checkpoints.map(({ checkpoint, markdown }) => [checkpoint, markdown]), [
+    [{ id: "first-run", requirement: "success", instruction: "运行第一行代码。" }, "运行第一行代码。"],
+    [{ id: "syntax-error", requirement: "error", instruction: "观察一次语法错误。" }, "观察一次语法错误。"],
+  ]);
+  assert.equal(storyProgressLimit(story.messages, [], false), story.messages.indexOf(checkpoints[0]));
+  assert.equal(storyProgressLimit(story.messages, ["first-run"], false), story.messages.indexOf(checkpoints[1]));
+  assert.equal(storyProgressLimit(story.messages, ["first-run", "syntax-error"], false), story.messages.length);
+});
+
+test("chapters without authored checkpoints still require one run before recap", () => {
+  const story = buildChapterStory({
+    number: 1,
+    title: "编程为什么重要",
     markdown: "## 核心讲解\n\n先观察。\n\n## 本章回顾\n\n再总结。",
   });
   const recapIndex = story.messages.findIndex(({ section }) => section === "recap");
 
-  assert.ok(recapIndex > 0);
-  assert.equal(storyProgressLimit(story.messages, false), recapIndex);
-  assert.equal(storyProgressLimit(story.messages, true), story.messages.length);
+  assert.equal(storyProgressLimit(story.messages, [], false), recapIndex);
+  assert.equal(storyProgressLimit(story.messages, [], true), story.messages.length);
+});
+
+test("checkpoint requirements distinguish attempts, Python errors, and final passes", () => {
+  assert.equal(storyCheckpointSatisfied("run", "failed"), true);
+  assert.equal(storyCheckpointSatisfied("success", "failed"), false);
+  assert.equal(storyCheckpointSatisfied("success", "passed"), true);
+  assert.equal(storyCheckpointSatisfied("error", "failed"), false);
+  assert.equal(storyCheckpointSatisfied("error", "passed"), false);
+  assert.equal(storyCheckpointSatisfied("error", "error"), true);
+  assert.equal(storyCheckpointSatisfied("pass", "error"), false);
+  assert.equal(storyCheckpointSatisfied("pass", "passed"), true);
+});
+
+test("guided runs become formal only at the final pass checkpoint", () => {
+  assert.equal(storyRunIsFormalChallenge(false), true);
+  assert.equal(storyRunIsFormalChallenge(true), false);
+  assert.equal(storyRunIsFormalChallenge(true, { id: "first-run", requirement: "success", instruction: "运行" }), false);
+  assert.equal(storyRunIsFormalChallenge(true, { id: "syntax-error", requirement: "error", instruction: "报错" }), false);
+  assert.equal(storyRunIsFormalChallenge(true, { id: "final-challenge", requirement: "pass", instruction: "通关" }), true);
 });
 
 test("only story voices use typewriter pacing", () => {
-  const pacing = ["intro", "section", "narration", "dialogue", "list", "code", "table", "callout", "recap"]
+  const pacing = ["intro", "section", "narration", "dialogue", "list", "code", "table", "callout", "checkpoint", "recap"]
     .map((kind) => storyMessageUsesTypewriter({ kind }));
 
-  assert.deepEqual(pacing, [false, false, true, true, false, false, false, false, true]);
+  assert.deepEqual(pacing, [false, false, true, true, false, false, false, false, false, true]);
 });
 
 test("explicit speaker markers cover every requested story voice", () => {
@@ -234,5 +287,13 @@ test("all published chapters satisfy the playable story contract", async () => {
       .filter(storyMessageUsesTypewriter)
       .find(({ markdown: messageMarkdown }) => storyMessageText(messageMarkdown).length > 240);
     assert.equal(longMessage, undefined, `chapter ${chapter.number} keeps every typewriter message within 240 characters`);
+
+    if (chapter.number === 2) {
+      assert.deepEqual(story.messages.flatMap(({ checkpoint }) => checkpoint ? [[checkpoint.id, checkpoint.requirement]] : []), [
+        ["first-run", "success"],
+        ["syntax-error", "error"],
+        ["final-challenge", "pass"],
+      ]);
+    }
   }
 });

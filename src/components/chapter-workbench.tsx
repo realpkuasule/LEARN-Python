@@ -10,6 +10,7 @@ import { EnvironmentBackdrop } from "@/components/environment-backdrop";
 import { StoryCourse } from "@/components/story-course";
 import { getBossDialogue } from "@/domain/boss-dialogues";
 import { getChapterHints } from "@/domain/chapter-hints";
+import { storyCheckpointSatisfied, storyRunIsFormalChallenge, type StoryCheckpoint } from "@/domain/chapter-story";
 import type { AiTutorExecutionContext } from "@/domain/ai-tutor";
 import { HINT_POTION_ID, getEquipment } from "@/domain/equipment";
 import { BOSS_COIN_BONUS, BOSS_EXP_BONUS, canAccessChapter } from "@/domain/game-state";
@@ -34,8 +35,11 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const [code, setCode] = useState(chapter.exercise.starterCode);
   const [stdin, setStdin] = useState("");
   const [state, setState] = useState<"idle" | "running" | "passed" | "failed">("idle");
-  const [output, setOutput] = useState("尚未运行。写完代码后接受挑战吧。");
+  const [output, setOutput] = useState("尚未运行。写完代码后点击下方运行按钮。");
   const [testsPassed, setTestsPassed] = useState(0);
+  const [assessmentPassed, setAssessmentPassed] = useState(false);
+  const [activeCheckpoint, setActiveCheckpoint] = useState<StoryCheckpoint>();
+  const [completedCheckpointIds, setCompletedCheckpointIds] = useState<readonly string[]>([]);
   const [executionContext, setExecutionContext] = useState<AiTutorExecutionContext>();
   const [encounterComplete, setEncounterComplete] = useState(!chapter.isBoss);
   const [mobilePanel, setMobilePanel] = useState<"course" | "code">("course");
@@ -46,9 +50,12 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const recordAiRequest = useGameStore(({ recordAiRequest }) => recordAiRequest);
   const consumeHintPotion = useGameStore(({ consumeHintPotion }) => consumeHintPotion);
   const completed = game?.progress.completedChapters.includes(chapter.number) ?? false;
+  const chapterCompleted = completed || assessmentPassed;
+  const usesGuidedCheckpoints = chapter.contentMarkdown.includes("[实践检查点:");
+  const isFormalChallenge = storyRunIsFormalChallenge(usesGuidedCheckpoints, activeCheckpoint);
   const bossSprite = bossSpriteAsset(chapter.number);
   const hasHiddenBossTests = chapter.isBoss && chapter.exercise.testCount > 1;
-  const displayedTestsPassed = completed ? chapter.exercise.testCount : testsPassed;
+  const displayedTestsPassed = chapterCompleted ? chapter.exercise.testCount : testsPassed;
   const bossHp = Math.max(chapter.exercise.testCount - displayedTestsPassed, 0);
   const bossRewardExp = chapter.rewardExp + BOSS_EXP_BONUS;
   const bossRewardCoins = chapter.rewardCoins + BOSS_COIN_BONUS;
@@ -58,8 +65,8 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const hintPotionCount = game ? inventoryQuantity(game, HINT_POTION_ID) : 0;
   const dropNames = (chapter.dropItemIds ?? []).map((itemId) => getEquipment(itemId)?.name).filter(Boolean);
   const bossDialogue = chapter.isBoss ? getBossDialogue(chapter.number) : undefined;
-  const showBossEncounter = Boolean(hydrated && bossDialogue && chapterAccessible && !completed && !encounterComplete);
-  const sceneAsset = chapter.number === 17 && (encounterComplete || completed)
+  const showBossEncounter = Boolean(hydrated && bossDialogue && chapterAccessible && !chapterCompleted && !encounterComplete);
+  const sceneAsset = chapter.number === 17 && (encounterComplete || chapterCompleted)
     ? dragonBattleEnvironmentAsset()
     : chapterEnvironmentAsset(chapter.number);
 
@@ -69,17 +76,32 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
     setState("running");
     setTestsPassed(0);
     setOutput("正在召唤隔离的 Python 运行环境...");
-    recordAttempt(chapter.exercise.id);
+    if (isFormalChallenge) recordAttempt(chapter.exercise.id);
+    const checkpoint = activeCheckpoint;
     try {
       const result = await submitExecution({ exerciseId: chapter.exercise.id, code, stdin });
       setTestsPassed(result.testsPassed);
-      const detail = [result.message, result.stdout && `\n输出：\n${result.stdout}`, result.stderr && `\n错误：\n${result.stderr}`].filter(Boolean).join("");
+      const checkpointComplete = checkpoint ? storyCheckpointSatisfied(checkpoint.requirement, result.status) : false;
+      const formalPass = result.status === "passed" && storyRunIsFormalChallenge(usesGuidedCheckpoints, checkpoint);
+      if (checkpointComplete && checkpoint) {
+        setCompletedCheckpointIds((ids) => ids.includes(checkpoint.id) ? ids : [...ids, checkpoint.id]);
+      }
+      const resultMessage = result.status === "passed" && !formalPass
+        ? "练习运行成功，实践检查点已完成。"
+        : result.message;
+      const checkpointMessage = checkpoint && !checkpointComplete
+        ? "\n实践检查点尚未完成，请按左侧要求调整代码后重试。"
+        : "";
+      const detail = [resultMessage, result.stdout && `\n输出：\n${result.stdout}`, result.stderr && `\n错误：\n${result.stderr}`, checkpointMessage].filter(Boolean).join("");
       const executionMessage = `${detail}\n耗时：${result.durationMs}ms`;
       setOutput(executionMessage);
       setExecutionContext({ status: result.status, message: executionMessage });
       setState(result.status === "passed" ? "passed" : "failed");
       if (game) playSound(result.status === "passed" ? (chapter.isBoss ? "quest-unlock" : "code-success") : "code-error", game.settings);
-      if (result.status === "passed") completeChapter(chapter.number);
+      if (formalPass) {
+        setAssessmentPassed(true);
+        completeChapter(chapter.number);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "运行失败，请稍后重试。";
       setState("failed");
@@ -110,10 +132,12 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
           battleState={state}
           bossSprite={bossSprite}
           chapter={chapter}
-          completed={completed || state === "passed"}
+          completed={chapterCompleted}
+          completedCheckpointIds={completedCheckpointIds}
           hasPracticeFeedback={executionContext !== undefined}
           heroAvatarId={game?.hero.avatarId ?? 1}
           heroName={game?.hero.name ?? "刘老三"}
+          onCheckpointChange={setActiveCheckpoint}
           onRequestChallenge={() => setMobilePanel("code")}
           reducedMotion={game?.settings.reducedMotion ?? false}
           sceneAsset={sceneAsset}
@@ -123,11 +147,11 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
       <aside className="mission-scroll pixel-panel" aria-label="编程挑战">
         <div className="mission-heading">
           <div>
-            <p className="eyebrow">本章挑战</p>
-            <h2>{chapter.exercise.title}</h2>
+            <p className="eyebrow">{activeCheckpoint ? "当前实践" : "本章挑战"}</p>
+            <h2>{activeCheckpoint ? "剧情实践检查点" : chapter.exercise.title}</h2>
           </div>
-          <span className={completed || state === "passed" ? "status-success" : "muted"}>
-            {completed || state === "passed" ? "已通关" : "待挑战"}
+          <span className={chapterCompleted ? "status-success" : "muted"}>
+            {chapterCompleted ? "已通关" : "待挑战"}
           </span>
         </div>
         {hasHiddenBossTests && (
@@ -159,7 +183,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
           />
         ) : (
           <>
-        <p className="mission-copy">{chapter.exercise.instructions}</p>
+        <p className="mission-copy">{activeCheckpoint?.instruction ?? chapter.exercise.instructions}</p>
         <p className="workbench-field-label">Python 代码 <span>必填</span></p>
         <div className="editor-frame" aria-label="Python 代码编辑器">
           <Editor
@@ -192,7 +216,11 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
             ? "读取存档..."
             : !chapterAccessible
               ? "章节尚未解锁"
-              : state === "running" ? "运行中..." : chapter.isBoss ? "发动代码攻击" : "运行并挑战"}
+              : state === "running"
+                ? "运行中..."
+                : isFormalChallenge
+                  ? (chapter.isBoss ? "发动代码攻击" : "运行并挑战")
+                  : "运行练习"}
         </button>
         <section className={`result-panel ${state === "passed" ? "passed" : state === "failed" ? "failed" : ""}`} aria-live="polite">
           <h3>冒险日志</h3>
@@ -219,10 +247,10 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
           </section>
         )}
         {hasHiddenBossTests && (
-          <section className={`boss-rewards ${completed ? "settled" : ""}`} aria-label="Boss 胜利奖励">
+          <section className={`boss-rewards ${chapterCompleted ? "settled" : ""}`} aria-label="Boss 胜利奖励">
             <div className="boss-status-heading">
               <h3>胜利奖励</h3>
-              <span>{completed ? "已结算" : "待领取"}</span>
+              <span>{chapterCompleted ? "已结算" : "待领取"}</span>
             </div>
             <div className="boss-reward-grid">
               <span>EXP +{bossRewardExp}</span>
@@ -230,16 +258,14 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
               {chapter.titleReward && <span>称号「{chapter.titleReward}」</span>}
               {dropNames.map((name) => <span key={name}>首件掉落「{name}」</span>)}
             </div>
-            <p>{completed
-              ? "奖励只结算一次，下一章已经解锁。"
-              : state === "passed" && !game
-                ? "挑战已通过，但没有勇者存档，奖励尚未结算。"
-                : `${chapter.exercise.testCount} 组隐藏测试全部通过后自动结算。`}</p>
+            <p>{chapterCompleted
+              ? game ? "奖励只结算一次，下一章已经解锁。" : "挑战已通过，但没有勇者存档，奖励尚未结算。"
+              : `${chapter.exercise.testCount} 组隐藏测试全部通过后自动结算。`}</p>
           </section>
         )}
         {hydrated && game && !chapterAccessible && <p className="status-error">请先完成上一章，再回来挑战这里。</p>}
         {hydrated && !game && <p className="status-error">当前没有勇者存档；代码仍可运行，但不会结算奖励。</p>}
-        {chapter.number === 17 && (completed || state === "passed") && (
+        {chapter.number === 17 && chapterCompleted && (
           <section className="final-victory pixel-panel" aria-label="最终通关画面">
             <div className="final-victory-scene">
               <EnvironmentBackdrop alt="击败恶龙后的胜利营地" sizes="(max-width: 1023px) calc(100vw - 52px), 58vw" src={victoryCampEnvironmentAsset()} />
@@ -255,7 +281,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
       </aside>
       <AiSpellbook
         aiRequestCount={game?.achievements.aiRequests ?? 0}
-        chapterCompleted={completed || state === "passed"}
+        chapterCompleted={chapterCompleted}
         chapterNumber={chapter.number}
         code={code}
         execution={executionContext}
