@@ -9,6 +9,7 @@ import {
   buildChapterStory,
   storyMessageText,
   storyMessageUsesTypewriter,
+  storyProgressLimit,
   type StoryMessage,
   type StoryRole,
 } from "@/domain/chapter-story";
@@ -25,6 +26,7 @@ interface StoryCourseProperties {
   readonly completed: boolean;
   readonly heroAvatarId: number;
   readonly heroName: string;
+  readonly hasPracticeFeedback: boolean;
   readonly onRequestChallenge: () => void;
   readonly reducedMotion: boolean;
   readonly sceneAsset: string;
@@ -87,6 +89,7 @@ export const StoryCourse = ({
   completed,
   heroAvatarId,
   heroName,
+  hasPracticeFeedback,
   onRequestChallenge,
   reducedMotion,
   sceneAsset,
@@ -106,6 +109,11 @@ export const StoryCourse = ({
   const introTimer = useRef<number | undefined>(undefined);
   const nextHref = chapter.number < 17 ? `/chapter/${chapter.number + 1}` : "/hero";
   const nextLabel = chapter.number < 17 ? "前往下一章" : "查看通关角色卡";
+  const practiceComplete = completed || hasPracticeFeedback;
+  const progressLimit = storyProgressLimit(story.messages, practiceComplete);
+  const practiceBlocked = !practiceComplete
+    && progressLimit < story.messages.length
+    && completedCount >= progressLimit;
   const currentMessage = story.messages[completedCount];
   const currentText = currentMessage ? storyMessageText(currentMessage.markdown) : "";
   const typewriterEnabled = Boolean(currentMessage && !reducedMotion && storyMessageUsesTypewriter(currentMessage));
@@ -150,21 +158,25 @@ export const StoryCourse = ({
       dismissIntro();
       return;
     }
+    if (practiceBlocked) {
+      requestChallenge();
+      return;
+    }
     if (!currentMessage) return;
     if (isTyping) {
       setTyping({ messageId: currentMessage.id, length: currentText.length });
       return;
     }
 
-    const nextCount = completedCount + 1;
+    const nextCount = Math.min(completedCount + 1, progressLimit);
     setCompletedCount(nextCount);
     if (nextCount >= story.messages.length) setOutroOpen(true);
   };
 
   const revealAll = (): void => {
     setIntroPhase("hidden");
-    setCompletedCount(story.messages.length);
-    setOutroOpen(true);
+    setCompletedCount(progressLimit);
+    setOutroOpen(progressLimit >= story.messages.length);
   };
 
   const requestChallenge = (): void => {
@@ -228,20 +240,27 @@ export const StoryCourse = ({
         <div className="story-feed-scroll" ref={feed}>
           <div className="story-feed-toolbar">
             <p><strong>冒险记录</strong><span>逐段推进 · 点击可补全当前文字</span></p>
-            {!storyComplete && <button className="story-text-button" onClick={revealAll} type="button">显示全部</button>}
+            {!storyComplete && !practiceBlocked && <button className="story-text-button" onClick={revealAll} type="button">显示全部</button>}
           </div>
           <ol className="story-message-list">
             {story.messages.slice(0, completedCount).map((message) => (
               <StoryBubble avatarId={heroAvatarId} bossSprite={bossSprite} key={message.id} message={message} />
             ))}
-            {currentMessage && (
+            {currentMessage && (practiceBlocked ? (
+              <li className="story-practice-gate" role="status">
+                <p className="eyebrow">实践检查点</p>
+                <strong>先运行一次代码，再进入本章回顾</strong>
+                <p>成功、失败或报错都算有效尝试。收到右侧「冒险日志」反馈后，即可继续阅读。</p>
+                <button className="pixel-button" onClick={requestChallenge} type="button">前往代码挑战</button>
+              </li>
+            ) : (
               <StoryBubble
                 avatarId={heroAvatarId}
                 bossSprite={bossSprite}
                 message={currentMessage}
                 typingText={isTyping ? currentText.slice(0, typedLength) : undefined}
               />
-            )}
+            ))}
           </ol>
           {!currentMessage && (
             <footer className="story-feed-ending">
@@ -258,8 +277,8 @@ export const StoryCourse = ({
         </div>
         {currentMessage && (
           <button className="story-advance" onClick={advance} type="button">
-            <span>{isTyping ? "立即显示本段" : "继续"}</span>
-            <kbd>{isTyping ? "CLICK" : "ENTER"}</kbd>
+            <span>{practiceBlocked ? "先完成一次运行" : isTyping ? "立即显示本段" : "继续"}</span>
+            <kbd>{practiceBlocked ? "去挑战" : isTyping ? "CLICK" : "ENTER"}</kbd>
           </button>
         )}
       </div>
@@ -283,7 +302,11 @@ export const StoryCourse = ({
         </section>
       )}
       <p aria-live="polite" className="sr-only">
-        {storyComplete ? "本章故事已读完" : isTyping ? "正在显示新段落" : "当前段落显示完毕，可以继续"}
+        {storyComplete
+          ? "本章故事已读完"
+          : practiceBlocked
+            ? "实践检查点：运行一次代码并收到反馈后继续"
+            : isTyping ? "正在显示新段落" : "当前段落显示完毕，可以继续"}
       </p>
     </section>
   );

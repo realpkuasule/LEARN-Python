@@ -111,6 +111,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
           bossSprite={bossSprite}
           chapter={chapter}
           completed={completed || state === "passed"}
+          hasPracticeFeedback={executionContext !== undefined}
           heroAvatarId={game?.hero.avatarId ?? 1}
           heroName={game?.hero.name ?? "刘老三"}
           onRequestChallenge={() => setMobilePanel("code")}

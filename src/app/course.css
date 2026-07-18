@@ -291,6 +291,25 @@
   list-style: none;
 }
 
+.story-practice-gate {
+  display: grid;
+  width: min(100%, 700px);
+  gap: 10px;
+  border: 3px solid var(--info);
+  box-shadow: 3px 3px 0 var(--border-dark);
+  background: #101e33;
+  padding: 16px;
+}
+
+.story-practice-gate p {
+  margin: 0;
+  color: var(--text-muted);
+}
+
+.story-practice-gate .pixel-button {
+  justify-self: start;
+}
+
 .story-message {
   --story-role: var(--accent);
   min-width: 0;

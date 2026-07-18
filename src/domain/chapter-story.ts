@@ -191,6 +191,15 @@ const blockKind = (block: string, inRecap: boolean): StoryMessageKind => {
 export const storyMessageUsesTypewriter = ({ kind }: Pick<StoryMessage, "kind">): boolean =>
   kind === "narration" || kind === "dialogue" || kind === "recap";
 
+export const storyProgressLimit = (
+  messages: readonly StoryMessage[],
+  hasPracticeFeedback: boolean,
+): number => {
+  if (hasPracticeFeedback) return messages.length;
+  const recapIndex = messages.findIndex(({ section }) => section === "recap");
+  return recapIndex < 0 ? messages.length : recapIndex;
+};
+
 export const buildChapterStory = ({
   number,
   title,

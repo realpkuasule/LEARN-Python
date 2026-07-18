@@ -7,6 +7,7 @@ import {
   buildChapterStory,
   storyMessageText,
   storyMessageUsesTypewriter,
+  storyProgressLimit,
 } from "../../src/domain/chapter-story.ts";
 
 test("story contract turns the document title into a chapter intro kept in the feed", () => {
@@ -60,6 +61,19 @@ test("story contract preserves sections, lists, code, tables, callouts, and the 
   assert.match(story.recapMarkdown, /本章回顾/);
   assert.match(story.recapMarkdown, /AI 会放大表达/);
   assert.ok(story.messages.every(({ markdown }) => markdown.trim().length > 0));
+});
+
+test("reveal-all stops before the recap until one code run has returned feedback", () => {
+  const story = buildChapterStory({
+    number: 2,
+    title: "第一个 Python 程序",
+    markdown: "## 核心讲解\n\n先观察。\n\n## 本章回顾\n\n再总结。",
+  });
+  const recapIndex = story.messages.findIndex(({ section }) => section === "recap");
+
+  assert.ok(recapIndex > 0);
+  assert.equal(storyProgressLimit(story.messages, false), recapIndex);
+  assert.equal(storyProgressLimit(story.messages, true), story.messages.length);
 });
 
 test("only story voices use typewriter pacing", () => {
