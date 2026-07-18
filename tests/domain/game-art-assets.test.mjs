@@ -12,6 +12,7 @@ import {
   itemSpriteAsset,
   npcMonsterSpriteAsset,
   portraitSpriteAsset,
+  spriteViewBox,
 } from "../../src/lib/game-art-assets.ts";
 
 const THEMES = ["european", "chinese"];
@@ -85,6 +86,19 @@ test("v2 sprite mappings are stable and match the game domain", () => {
   assert.equal(chapterNodeSpriteAsset("available").index, 11);
   assert.equal(equipmentSlotSpriteAsset("weapon").index, 4);
   assert.equal(equipmentSlotSpriteAsset("boots").index, 9);
+});
+
+test("sprite view boxes use integer cell boundaries and support a focused crop", () => {
+  assert.equal(spriteViewBox(portraitSpriteAsset(1)), "0 0 334 471");
+  assert.equal(spriteViewBox(portraitSpriteAsset(10)), "1338 471 334 470");
+  assert.equal(
+    spriteViewBox(portraitSpriteAsset(1), { left: 44, right: 44, bottom: 140 }),
+    "44 0 246 331",
+  );
+  assert.throws(
+    () => spriteViewBox(portraitSpriteAsset(1), { left: 200, right: 200 }),
+    RangeError,
+  );
 });
 
 test("both themes expose matching RGBA sprite sheets", async () => {

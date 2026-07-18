@@ -9,6 +9,8 @@ import {
 import { PixelAvatar } from "./pixel-avatar";
 import { PixelSprite } from "./pixel-sprite";
 
+const STAGE_HERO_CROP = { left: 44, right: 44, bottom: 140 } as const;
+
 const npcMonsterName = (role: StoryRole, speaker: string): NpcMonsterSpriteName => {
   if (role === "friendly") {
     if (/铁匠|矮人/.test(speaker)) return "blacksmith";
@@ -75,6 +77,7 @@ export const StageSpeakerPortrait = ({
       <PixelSprite
         alt={`${message.speaker} 像素立绘`}
         className="story-stage-character story-stage-hero"
+        crop={STAGE_HERO_CROP}
         size={176}
         sprite={portraitSpriteAsset(avatarId)}
       />

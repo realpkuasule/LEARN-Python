@@ -32,6 +32,32 @@ export interface SpriteAsset {
   readonly index: number;
 }
 
+export interface SpriteCrop {
+  readonly top?: number;
+  readonly right?: number;
+  readonly bottom?: number;
+  readonly left?: number;
+}
+
+export const spriteViewBox = (
+  sprite: SpriteAsset,
+  crop: SpriteCrop = {},
+): string => {
+  const column = sprite.index % sprite.columns;
+  const row = Math.floor(sprite.index / sprite.columns);
+  const cellLeft = Math.round((column * sprite.sheetWidth) / sprite.columns);
+  const cellRight = Math.round(((column + 1) * sprite.sheetWidth) / sprite.columns);
+  const cellTop = Math.round((row * sprite.sheetHeight) / sprite.rows);
+  const cellBottom = Math.round(((row + 1) * sprite.sheetHeight) / sprite.rows);
+  const left = cellLeft + (crop.left ?? 0);
+  const top = cellTop + (crop.top ?? 0);
+  const width = cellRight - left - (crop.right ?? 0);
+  const height = cellBottom - top - (crop.bottom ?? 0);
+
+  if (width <= 0 || height <= 0) throw new RangeError("Sprite crop must leave a visible area");
+  return `${left} ${top} ${width} ${height}`;
+};
+
 interface SpriteSheet {
   readonly group: "game-art" | "gui";
   readonly name: "hero-movement" | "portraits" | "npc-monsters" | "bosses" | "items" | "gui-icons" | "gui-controls";

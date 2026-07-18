@@ -1,10 +1,15 @@
-import type { SpriteAsset } from "@/lib/game-art-assets";
+import {
+  spriteViewBox,
+  type SpriteAsset,
+  type SpriteCrop,
+} from "@/lib/game-art-assets";
 
 const DEFAULT_SPRITE_SIZE = 48;
 
 interface PixelSpriteProperties {
   readonly alt?: string;
   readonly className?: string;
+  readonly crop?: SpriteCrop;
   readonly size?: number;
   readonly sprite: SpriteAsset;
 }
@@ -12,14 +17,10 @@ interface PixelSpriteProperties {
 export const PixelSprite = ({
   alt = "",
   className = "",
+  crop,
   size = DEFAULT_SPRITE_SIZE,
   sprite,
 }: PixelSpriteProperties): React.ReactNode => {
-  const cellWidth = sprite.sheetWidth / sprite.columns;
-  const cellHeight = sprite.sheetHeight / sprite.rows;
-  const column = sprite.index % sprite.columns;
-  const row = Math.floor(sprite.index / sprite.columns);
-
   return (
     <svg
       aria-hidden={alt ? undefined : true}
@@ -29,7 +30,7 @@ export const PixelSprite = ({
       height={size}
       role={alt ? "img" : undefined}
       shapeRendering="crispEdges"
-      viewBox={`${column * cellWidth} ${row * cellHeight} ${cellWidth} ${cellHeight}`}
+      viewBox={spriteViewBox(sprite, crop)}
       width={size}
     >
       <image height={sprite.sheetHeight} href={sprite.src} width={sprite.sheetWidth} />
