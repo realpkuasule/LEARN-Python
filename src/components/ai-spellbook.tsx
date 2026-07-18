@@ -143,7 +143,7 @@ export const AiSpellbook = ({
       >
         <header className="ai-spellbook-header">
           <div>
-            <p>冒险者公会 · 演示导师</p>
+            <p>冒险者公会 · DeepSeek V4 Flash</p>
             <h2 id="ai-spellbook-title">AI 魔法书</h2>
           </div>
           <button aria-label="关闭 AI 魔法书" className="ai-spellbook-close" onClick={closeDialog} type="button">×</button>
@@ -151,6 +151,7 @@ export const AiSpellbook = ({
         <div className="ai-spellbook-mode">
           <strong>{mode === "tutor" ? "辅导模式" : "协作模式"}</strong>
           <span>{mode === "tutor" ? "只给线索，不直接给完整答案" : "本章已通关，可以讨论扩展方案"}</span>
+          <span>提问会将本章代码和最近运行日志发送至 DeepSeek</span>
           <small>已完成对话 {aiRequestCount} 次</small>
         </div>
         <div aria-live="polite" className="ai-spellbook-feed" ref={feed}>

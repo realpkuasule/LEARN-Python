@@ -32,14 +32,17 @@ test("AI tutor derives tutor mode and forwards bounded learning context", async 
   assert.equal(received.execution.message, "SyntaxError: 缺少右括号");
 });
 
-test("completed chapters enter collaboration mode with the fake provider", async () => {
+test("completed chapters enter collaboration mode with an explicit fake provider", async () => {
+  const fakeProvider = async function* (context) {
+    yield `协作模式：${context.question}`;
+  };
   const session = createAiTutorSession({
     chapterNumber: 2,
     exerciseId: "chapter-02-final",
     question: "帮我扩展成带名字的欢迎语",
     code: "print(\"Hello, Python!\")",
     chapterCompleted: true,
-  });
+  }, fakeProvider);
 
   assert.equal(session.mode, "collaborate");
   assert.match(await collect(session.chunks), /协作模式/);

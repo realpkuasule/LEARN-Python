@@ -10,7 +10,6 @@ import type {
 const MAX_QUESTION_LENGTH = 2_000;
 const MAX_CODE_LENGTH = 20_000;
 const MAX_EXECUTION_MESSAGE_LENGTH = 4_000;
-const MAX_EXECUTION_EXCERPT_LENGTH = 240;
 const HTTP_BAD_REQUEST = 400;
 const HTTP_NOT_FOUND = 404;
 const HTTP_PAYLOAD_TOO_LARGE = 413;
@@ -95,18 +94,9 @@ const parseRequest = (value: unknown): AiTutorRequest => {
   };
 };
 
-const fakeAiTutorProvider: AiTutorProvider = async function* (context) {
-  const response = context.mode === "tutor"
-    ? context.execution
-      ? `公会导师（演示）：先看最后一次冒险日志：${context.execution.message.slice(0, MAX_EXECUTION_EXCERPT_LENGTH)}。定位报错位置，再对照「${context.exercise.title}」的输入、处理和输出逐步修改。通关前我只给线索，不直接给完整答案。`
-      : `公会导师（演示）：先把「${context.exercise.title}」拆成输入、处理和输出三步，再检查当前代码缺的是哪一步。通关前我只给线索，不直接给完整答案。`
-    : `公会导师（演示）：协作模式已开启。围绕「${context.question}」，先说明你希望保留的输入和输出，再做一个最小扩展，并运行本章练习验证没有破坏原有行为。`;
-  for (const chunk of response.match(/[\s\S]{1,24}/g) ?? []) yield chunk;
-};
-
 export const createAiTutorSession = (
   input: unknown,
-  provider: AiTutorProvider = fakeAiTutorProvider,
+  provider: AiTutorProvider,
 ): { readonly mode: AiTutorMode; readonly chunks: AsyncIterable<string> } => {
   const request = parseRequest(input);
   const chapter = getChapter(request.chapterNumber);

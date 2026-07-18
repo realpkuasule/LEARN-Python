@@ -1,5 +1,6 @@
 import type { AiTutorEvent } from "@/domain/ai-tutor";
 import { AiTutorServiceError, createAiTutorSession } from "@/server/ai-tutor-service";
+import { createDeepSeekAiTutorProvider } from "@/server/deepseek-ai-tutor-provider";
 
 const HTTP_BAD_REQUEST = 400;
 const HTTP_SERVICE_UNAVAILABLE = 503;
@@ -13,7 +14,10 @@ const encodeEvent = (event: AiTutorEvent): Uint8Array => new TextEncoder().encod
 
 export const POST = async (request: Request): Promise<Response> => {
   try {
-    const session = createAiTutorSession(await request.json());
+    const session = createAiTutorSession(
+      await request.json(),
+      createDeepSeekAiTutorProvider({ signal: request.signal }),
+    );
     const stream = new ReadableStream<Uint8Array>({
       async start(controller) {
         controller.enqueue(encodeEvent({ type: "meta", mode: session.mode }));
