@@ -421,6 +421,61 @@
   background: #2a171d;
 }
 
+.story-message-table .story-bubble-body {
+  overflow-x: auto;
+}
+
+.story-message-table table {
+  width: 100%;
+  table-layout: fixed;
+  border: 3px solid var(--border-dark);
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--surface);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.story-message-table th,
+.story-message-table td {
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.story-message-table th {
+  border-bottom: 3px solid var(--border-dark);
+  background: var(--surface-raised);
+  color: var(--accent);
+}
+
+.story-message-table th + th,
+.story-message-table td + td {
+  border-left: 3px solid var(--border-dark);
+}
+
+.story-message-table tbody tr + tr td {
+  border-top: 2px solid var(--border-dark);
+}
+
+.story-message-table table:has(th:nth-child(2):last-child) th:first-child {
+  background: #2a171d;
+  color: #e5a0a0;
+}
+
+.story-message-table table:has(th:nth-child(2):last-child) th:last-child {
+  background: #10231e;
+  color: #91cf9f;
+}
+
+.story-message-table table:has(th:nth-child(2):last-child) td:first-child {
+  background: rgb(200 91 91 / 7%);
+}
+
+.story-message-table table:has(th:nth-child(2):last-child) td:last-child {
+  background: rgb(78 159 101 / 7%);
+}
+
 .story-message-intro .story-bubble-body,
 .story-message-section .story-bubble-body,
 .story-message-recap .story-bubble-body {
