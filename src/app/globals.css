@@ -295,6 +295,39 @@ input {
   height: 36px;
 }
 
+.hero-avatar-choice {
+  position: relative;
+  cursor: pointer;
+}
+
+.hero-avatar-choice:hover {
+  background: var(--surface-raised);
+}
+
+.hero-avatar-choice[aria-pressed="true"] {
+  border-color: var(--accent);
+  background: var(--surface-raised);
+  box-shadow:
+    inset 0 0 0 2px var(--accent),
+    4px 4px 0 var(--accent-pressed);
+}
+
+.hero-avatar-choice[aria-pressed="true"]::after {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 2px solid var(--border-dark);
+  box-shadow: 2px 2px 0 var(--border-dark);
+  background: var(--accent);
+  color: var(--border-dark);
+  content: "✓";
+  line-height: 1;
+}
+
 .course-prose {
   color: var(--text);
   font-family: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;

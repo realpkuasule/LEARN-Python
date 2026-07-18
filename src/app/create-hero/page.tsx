@@ -50,7 +50,7 @@ export default function CreateHeroPage(): React.ReactNode {
                 <button
                   aria-label={`选择头像 ${id}`}
                   aria-pressed={avatarId === id}
-                  className={`pixel-panel grid min-h-24 place-items-center p-3 ${avatarId === id ? "bg-raised text-accent" : ""}`}
+                  className="hero-avatar-choice pixel-panel grid min-h-24 place-items-center p-3"
                   key={id}
                   onClick={() => setAvatarId(id)}
                   type="button"
