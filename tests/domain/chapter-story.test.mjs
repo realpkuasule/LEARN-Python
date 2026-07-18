@@ -80,6 +80,16 @@ test("authored practice checkpoints gate reveal-all in document order", () => {
       "",
       "继续讲解。",
       "",
+      "[实践检查点: multi-line-output/output]",
+      "观察多行输出。",
+      "",
+      "继续讲解。",
+      "",
+      "[实践检查点: comma-output/output]",
+      "观察逗号分隔的输出。",
+      "",
+      "继续讲解。",
+      "",
       "[实践检查点: syntax-error/error]",
       "观察一次语法错误。",
       "",
@@ -92,11 +102,15 @@ test("authored practice checkpoints gate reveal-all in document order", () => {
 
   assert.deepEqual(checkpoints.map(({ checkpoint, markdown }) => [checkpoint, markdown]), [
     [{ id: "first-run", requirement: "success", instruction: "运行第一行代码。" }, "运行第一行代码。"],
+    [{ id: "multi-line-output", requirement: "output", instruction: "观察多行输出。" }, "观察多行输出。"],
+    [{ id: "comma-output", requirement: "output", instruction: "观察逗号分隔的输出。" }, "观察逗号分隔的输出。"],
     [{ id: "syntax-error", requirement: "error", instruction: "观察一次语法错误。" }, "观察一次语法错误。"],
   ]);
   assert.equal(storyProgressLimit(story.messages, [], false), story.messages.indexOf(checkpoints[0]));
   assert.equal(storyProgressLimit(story.messages, ["first-run"], false), story.messages.indexOf(checkpoints[1]));
-  assert.equal(storyProgressLimit(story.messages, ["first-run", "syntax-error"], false), story.messages.length);
+  assert.equal(storyProgressLimit(story.messages, ["first-run", "multi-line-output"], false), story.messages.indexOf(checkpoints[2]));
+  assert.equal(storyProgressLimit(story.messages, ["first-run", "multi-line-output", "comma-output"], false), story.messages.indexOf(checkpoints[3]));
+  assert.equal(storyProgressLimit(story.messages, ["first-run", "multi-line-output", "comma-output", "syntax-error"], false), story.messages.length);
 });
 
 test("chapters without authored checkpoints still require one run before recap", () => {
@@ -111,21 +125,27 @@ test("chapters without authored checkpoints still require one run before recap",
   assert.equal(storyProgressLimit(story.messages, [], true), story.messages.length);
 });
 
-test("checkpoint requirements distinguish attempts, Python errors, and final passes", () => {
-  assert.equal(storyCheckpointSatisfied("run", "failed"), true);
-  assert.equal(storyCheckpointSatisfied("success", "failed"), false);
-  assert.equal(storyCheckpointSatisfied("success", "passed"), true);
-  assert.equal(storyCheckpointSatisfied("error", "failed"), false);
-  assert.equal(storyCheckpointSatisfied("error", "passed"), false);
-  assert.equal(storyCheckpointSatisfied("error", "error"), true);
-  assert.equal(storyCheckpointSatisfied("pass", "error"), false);
-  assert.equal(storyCheckpointSatisfied("pass", "passed"), true);
+test("checkpoint requirements distinguish attempts, output, Python errors, and final passes", () => {
+  const result = (status, stdout = "") => ({ status, stdout });
+
+  assert.equal(storyCheckpointSatisfied("run", result("failed")), true);
+  assert.equal(storyCheckpointSatisfied("success", result("failed")), false);
+  assert.equal(storyCheckpointSatisfied("success", result("passed", "Hello, Python!\n")), true);
+  assert.equal(storyCheckpointSatisfied("output", result("error")), false);
+  assert.equal(storyCheckpointSatisfied("output", result("failed")), false);
+  assert.equal(storyCheckpointSatisfied("output", result("failed", "第一行\n第二行\n")), true);
+  assert.equal(storyCheckpointSatisfied("error", result("failed")), false);
+  assert.equal(storyCheckpointSatisfied("error", result("passed")), false);
+  assert.equal(storyCheckpointSatisfied("error", result("error")), true);
+  assert.equal(storyCheckpointSatisfied("pass", result("error")), false);
+  assert.equal(storyCheckpointSatisfied("pass", result("passed")), true);
 });
 
 test("guided runs stay locked until the story reaches a checkpoint", () => {
   assert.equal(storyRunMode(false), "formal");
   assert.equal(storyRunMode(true), "locked");
   assert.equal(storyRunMode(true, { id: "first-run", requirement: "success", instruction: "运行" }), "practice");
+  assert.equal(storyRunMode(true, { id: "multi-line-output", requirement: "output", instruction: "观察输出" }), "practice");
   assert.equal(storyRunMode(true, { id: "syntax-error", requirement: "error", instruction: "报错" }), "practice");
   assert.equal(storyRunMode(true, { id: "final-challenge", requirement: "pass", instruction: "通关" }), "formal");
   assert.equal(storyRunMode(true, undefined, true), "formal");
@@ -301,6 +321,8 @@ test("all published chapters satisfy the playable story contract", async () => {
     if (chapter.number === 2) {
       assert.deepEqual(story.messages.flatMap(({ checkpoint }) => checkpoint ? [[checkpoint.id, checkpoint.requirement]] : []), [
         ["first-run", "success"],
+        ["multi-line-output", "output"],
+        ["comma-output", "output"],
         ["syntax-error", "error"],
         ["final-challenge", "pass"],
       ]);

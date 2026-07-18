@@ -83,8 +83,9 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
     try {
       const result = await submitExecution({ exerciseId: chapter.exercise.id, code, stdin });
       setTestsPassed(result.testsPassed);
-      const checkpointComplete = checkpoint ? storyCheckpointSatisfied(checkpoint.requirement, result.status) : false;
+      const checkpointComplete = checkpoint ? storyCheckpointSatisfied(checkpoint.requirement, result) : false;
       const formalPass = result.status === "passed" && isFormalChallenge;
+      const runPassed = result.status === "passed" || (!isFormalChallenge && checkpointComplete);
       if (checkpointComplete && checkpoint) {
         setCompletedCheckpointIds((ids) => ids.includes(checkpoint.id) ? ids : [...ids, checkpoint.id]);
       }
@@ -96,8 +97,8 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
       const executionMessage = `${detail}\n耗时：${result.durationMs}ms`;
       setOutput(executionMessage);
       setExecutionContext({ status: result.status, message: executionMessage });
-      setState(result.status === "passed" ? "passed" : "failed");
-      if (game) playSound(result.status === "passed" ? (chapter.isBoss ? "quest-unlock" : "code-success") : "code-error", game.settings);
+      setState(runPassed ? "passed" : "failed");
+      if (game) playSound(runPassed ? (chapter.isBoss ? "quest-unlock" : "code-success") : "code-error", game.settings);
       if (formalPass) {
         setAssessmentPassed(true);
         completeChapter(chapter.number);

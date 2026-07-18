@@ -4,7 +4,7 @@ export const STORY_ROLES = ["narrator", "hero", "friendly", "neutral", "hostile"
 
 export type StoryRole = (typeof STORY_ROLES)[number];
 export type StoryMessageKind = "intro" | "section" | "narration" | "dialogue" | "list" | "code" | "table" | "callout" | "checkpoint" | "recap";
-export type StoryCheckpointRequirement = "run" | "success" | "error" | "pass";
+export type StoryCheckpointRequirement = "run" | "success" | "output" | "error" | "pass";
 export type StoryRunMode = "locked" | "practice" | "formal";
 
 export interface StoryCheckpoint {
@@ -57,7 +57,7 @@ const DEFAULT_SPEAKERS: Readonly<Record<StoryRole, string>> = {
 };
 
 const DEFAULT_HERO_NAME = "刘老三";
-const CHECKPOINT_PATTERN = /^\[实践检查点:\s*([a-z0-9-]+)\/(run|success|error|pass)\]\s*\n?([\s\S]+)$/;
+const CHECKPOINT_PATTERN = /^\[实践检查点:\s*([a-z0-9-]+)\/(run|success|output|error|pass)\]\s*\n?([\s\S]+)$/;
 
 const EXPLICIT_ROLE: Readonly<Record<string, StoryRole>> = {
   旁白: "narrator",
@@ -222,12 +222,13 @@ export const storyProgressLimit = (
 
 export const storyCheckpointSatisfied = (
   requirement: StoryCheckpointRequirement,
-  status: ExecutionResult["status"],
+  result: Pick<ExecutionResult, "status" | "stdout">,
 ): boolean => {
   if (requirement === "run") return true;
-  if (requirement === "success") return status === "passed";
-  if (requirement === "error") return status === "error";
-  return status === "passed";
+  if (requirement === "success") return result.status === "passed";
+  if (requirement === "output") return (result.status === "passed" || result.status === "failed") && result.stdout.trim().length > 0;
+  if (requirement === "error") return result.status === "error";
+  return result.status === "passed";
 };
 
 export const storyRunMode = (

@@ -6,6 +6,7 @@ import type { StoryCheckpoint } from "@/domain/chapter-story";
 const CHECKPOINT_LABEL: Readonly<Record<StoryCheckpoint["requirement"], string>> = {
   run: "运行代码后继续",
   success: "运行成功后继续",
+  output: "观察输出后继续",
   error: "观察 Python 报错后继续",
   pass: "通过最终挑战后继续",
 };
