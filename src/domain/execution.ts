@@ -36,3 +36,13 @@ export const evaluateExecution = (run: RunnerResult, expectedOutput: string): Ex
   }
   return { ...run, status: "passed", message: "挑战通过，奖励已结算。", testsPassed: 1, testsTotal: 1 };
 };
+
+export const evaluatePracticeExecution = (run: RunnerResult): ExecutionResult => {
+  if (run.timedOut) {
+    return { ...run, status: "timeout", message: "代码运行超时，检查循环是否有出口。", testsPassed: 0, testsTotal: 1 };
+  }
+  if (run.stderr) {
+    return { ...run, status: "error", message: "Python 报错了，根据错误类型和行号继续排查。", testsPassed: 0, testsTotal: 1 };
+  }
+  return { ...run, status: "passed", message: "练习代码运行成功。", testsPassed: 1, testsTotal: 1 };
+};

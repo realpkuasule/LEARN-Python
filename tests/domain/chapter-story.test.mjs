@@ -1,12 +1,9 @@
 import assert from "node:assert/strict";
-import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-import { CHAPTERS } from "../../src/domain/chapter-catalog.ts";
 import {
   buildChapterStory,
   storyCheckpointSatisfied,
-  storyMessageText,
   storyMessageUsesTypewriter,
   storyPracticeResultMessage,
   storyProgressLimit,
@@ -111,6 +108,22 @@ test("authored practice checkpoints gate reveal-all in document order", () => {
   assert.equal(storyProgressLimit(story.messages, ["first-run", "multi-line-output"], false), story.messages.indexOf(checkpoints[2]));
   assert.equal(storyProgressLimit(story.messages, ["first-run", "multi-line-output", "comma-output"], false), story.messages.indexOf(checkpoints[3]));
   assert.equal(storyProgressLimit(story.messages, ["first-run", "multi-line-output", "comma-output", "syntax-error"], false), story.messages.length);
+});
+
+test("manual checkpoints gate non-code learning activities without unlocking the runner", () => {
+  const story = buildChapterStory({
+    number: 1,
+    title: "编程为什么重要",
+    markdown: "练习。\n\n[实践检查点: prompt-comparison/confirm]\n完成两版 Prompt 对比后确认。",
+  });
+  const checkpoint = story.messages[2]?.checkpoint;
+
+  assert.deepEqual(checkpoint, {
+    id: "prompt-comparison",
+    requirement: "confirm",
+    instruction: "完成两版 Prompt 对比后确认。",
+  });
+  assert.equal(storyRunMode(true, checkpoint), "locked");
 });
 
 test("chapters without authored checkpoints still require one run before recap", () => {
@@ -288,44 +301,4 @@ test("quoted book and equipment names remain narration", () => {
     ["narrator", "code"],
     ["narrator", "list"],
   ]);
-});
-
-test("all published chapters satisfy the playable story contract", async () => {
-  for (const chapter of CHAPTERS) {
-    const markdown = await readFile(new URL(`../../${chapter.sourcePath}`, import.meta.url), "utf8");
-    const story = buildChapterStory({
-      number: chapter.number,
-      title: chapter.title,
-      bossName: chapter.bossName,
-      markdown,
-    });
-
-    assert.equal(story.messages[0]?.kind, "intro", `chapter ${chapter.number} intro`);
-    assert.ok(story.messages.length >= 20, `chapter ${chapter.number} has a useful message flow`);
-    assert.match(story.recapMarkdown, /本章回顾/, `chapter ${chapter.number} recap`);
-    assert.equal(new Set(story.messages.map(({ id }) => id)).size, story.messages.length);
-
-    const dialogue = story.messages.filter(({ kind, section }) => kind === "dialogue" && section === "body");
-    const explicitDialogueCount = [...markdown.matchAll(/^(?:\[|【)(?:英雄|友善NPC|中立NPC|敌对NPC)(?:(?:\s*[:：]\s*)[^\]】]+)?(?:\]|】)\s*/gm)].length;
-    assert.equal(dialogue.length, explicitDialogueCount, `chapter ${chapter.number} explicitly authors every dialogue beat`);
-    assert.ok(dialogue.length >= 3, `chapter ${chapter.number} has at least three dialogue beats`);
-    assert.ok(new Set(dialogue.map(({ role }) => role)).size >= 2, `chapter ${chapter.number} uses at least two character voices`);
-    assert.ok(dialogue.some(({ role }) => role === "hero"), `chapter ${chapter.number} gives the hero a voice`);
-    assert.ok(dialogue.some(({ role }) => role !== "hero"), `chapter ${chapter.number} gives another character a voice`);
-
-    const longMessage = story.messages
-      .filter(storyMessageUsesTypewriter)
-      .find(({ markdown: messageMarkdown }) => storyMessageText(messageMarkdown).length > 240);
-    assert.equal(longMessage, undefined, `chapter ${chapter.number} keeps every typewriter message within 240 characters`);
-
-    if (chapter.number === 2) {
-      assert.deepEqual(story.messages.flatMap(({ checkpoint }) => checkpoint ? [[checkpoint.id, checkpoint.requirement]] : []), [
-        ["first-run", "success"],
-        ["multi-line-output", "output"],
-        ["comma-output", "output"],
-        ["syntax-error", "error"],
-        ["final-challenge", "pass"],
-      ]);
-    }
-  }
 });

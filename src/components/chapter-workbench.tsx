@@ -55,6 +55,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
   const runMode = storyRunMode(usesGuidedCheckpoints, activeCheckpoint, chapterCompleted);
   const isFormalChallenge = runMode === "formal";
   const waitingForCheckpoint = runMode === "locked";
+  const manualCheckpoint = activeCheckpoint?.requirement === "confirm";
   const bossSprite = bossSpriteAsset(chapter.number);
   const hasHiddenBossTests = chapter.isBoss && chapter.exercise.testCount > 1;
   const displayedTestsPassed = chapterCompleted ? chapter.exercise.testCount : testsPassed;
@@ -81,8 +82,8 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
     if (isFormalChallenge) recordAttempt(chapter.exercise.id);
     const checkpoint = activeCheckpoint;
     try {
-      const result = await submitExecution({ exerciseId: chapter.exercise.id, code, stdin });
-      setTestsPassed(result.testsPassed);
+      const result = await submitExecution({ exerciseId: chapter.exercise.id, code, mode: isFormalChallenge ? "formal" : "practice", stdin });
+      setTestsPassed(isFormalChallenge ? result.testsPassed : 0);
       const checkpointComplete = checkpoint ? storyCheckpointSatisfied(checkpoint.requirement, result) : false;
       const formalPass = result.status === "passed" && isFormalChallenge;
       const runPassed = result.status === "passed" || (!isFormalChallenge && checkpointComplete);
@@ -139,6 +140,9 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
           heroAvatarId={game?.hero.avatarId ?? 1}
           heroName={game?.hero.name ?? "刘老三"}
           onCheckpointChange={setActiveCheckpoint}
+          onCheckpointComplete={(checkpointId) => {
+            setCompletedCheckpointIds((ids) => ids.includes(checkpointId) ? ids : [...ids, checkpointId]);
+          }}
           onRequestChallenge={() => setMobilePanel("code")}
           reducedMotion={game?.settings.reducedMotion ?? false}
           sceneAsset={sceneAsset}
@@ -149,7 +153,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
         <div className="mission-heading">
           <div>
             <p className="eyebrow">{activeCheckpoint ? "当前实践" : waitingForCheckpoint ? "等待剧情" : "本章挑战"}</p>
-            <h2>{activeCheckpoint ? "剧情实践检查点" : waitingForCheckpoint ? "实践尚未解锁" : chapter.exercise.title}</h2>
+            <h2>{manualCheckpoint ? "非代码实践检查点" : activeCheckpoint ? "剧情实践检查点" : waitingForCheckpoint ? "实践尚未解锁" : chapter.exercise.title}</h2>
           </div>
           <span className={chapterCompleted ? "status-success" : "muted"}>
             {chapterCompleted ? "已通关" : "待挑战"}
@@ -218,6 +222,8 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
             ? "读取存档..."
             : !chapterAccessible
               ? "章节尚未解锁"
+              : manualCheckpoint
+                ? "在左侧确认完成"
               : waitingForCheckpoint
                 ? "继续剧情以解锁练习"
               : state === "running"

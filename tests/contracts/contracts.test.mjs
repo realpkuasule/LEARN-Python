@@ -80,6 +80,8 @@ test("execution requests support bounded source code and standard input", async 
   const contract = JSON.parse(await readFile(openApiPath, "utf8"));
   const request = contract.components.schemas.ExecutionRequest;
 
+  assert.deepEqual(request.required.sort(), ["code", "exerciseId", "mode"]);
+  assert.deepEqual(request.properties.mode.enum, ["practice", "formal"]);
   assert.equal(request.properties.code.maxLength, 20_000);
   assert.equal(request.properties.stdin.maxLength, 20_000);
 });

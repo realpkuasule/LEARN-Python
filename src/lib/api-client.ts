@@ -4,6 +4,7 @@ import type { ExecutionResult } from "@/domain/execution";
 interface ExecutionRequest {
   readonly exerciseId: string;
   readonly code: string;
+  readonly mode: "practice" | "formal";
   readonly stdin?: string;
 }
 

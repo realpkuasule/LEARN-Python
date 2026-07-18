@@ -47,6 +47,24 @@ test("Boss exercises aggregate private cases without leaking their data", async 
   assert.equal(Object.hasOwn(result, "hiddenTests"), false);
 });
 
+test("practice execution runs learner code once without applying final assessments", async () => {
+  const calls = [];
+  const result = await executeExercise(
+    { exerciseId: "chapter-05-final", code: "print('练习输出')", mode: "practice" },
+    async (code) => {
+      calls.push(code);
+      return { stdout: "练习输出\n", stderr: "", durationMs: 9 };
+    },
+  );
+
+  assert.deepEqual(calls, ["print('练习输出')"]);
+  assert.equal(result.status, "passed");
+  assert.equal(result.stdout, "练习输出\n");
+  assert.equal(result.testsPassed, 1);
+  assert.equal(result.testsTotal, 1);
+  assert.match(result.message, /练习/);
+});
+
 test("unknown exercise ids are rejected before code is run", async () => {
   let called = false;
 

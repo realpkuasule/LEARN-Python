@@ -1,5 +1,5 @@
 import { getExercise } from "../domain/chapter-catalog.ts";
-import { evaluateExecution, type ExecutionResult, type RunnerResult } from "../domain/execution.ts";
+import { evaluateExecution, evaluatePracticeExecution, type ExecutionResult, type RunnerResult } from "../domain/execution.ts";
 import { getExerciseAssessment } from "./exercise-assessments.ts";
 
 const MAX_CODE_LENGTH = 20_000;
@@ -10,6 +10,7 @@ const HTTP_PAYLOAD_TOO_LARGE = 413;
 export interface ExecutionInput {
   readonly exerciseId: string;
   readonly code: string;
+  readonly mode?: "practice" | "formal";
   readonly stdin?: string;
 }
 
@@ -70,6 +71,8 @@ export const executeExercise = async (
   if ((input.stdin?.length ?? 0) > MAX_CODE_LENGTH) {
     throw new ExerciseServiceError("标准输入不能超过 20,000 个字符。", HTTP_PAYLOAD_TOO_LARGE, "STDIN_TOO_LARGE");
   }
+
+  if (input.mode === "practice") return evaluatePracticeExecution(await runPython(input.code, input.stdin));
 
   if (assessments.length === 1) {
     return evaluateExecution(await runPython(input.code, input.stdin), assessments[0].expectedOutput);

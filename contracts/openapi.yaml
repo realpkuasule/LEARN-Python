@@ -195,10 +195,11 @@
       "ExecutionRequest": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["exerciseId", "code"],
+        "required": ["exerciseId", "code", "mode"],
         "properties": {
           "exerciseId": { "type": "string", "pattern": "^chapter-[0-9]{2}-final$" },
           "code": { "type": "string", "minLength": 1, "maxLength": 20000 },
+          "mode": { "type": "string", "enum": ["practice", "formal"], "description": "Practice runs learner code once; formal runs the chapter assessment." },
           "stdin": { "type": "string", "maxLength": 20000, "description": "Optional standard input supplied to the Python process." }
         }
       },

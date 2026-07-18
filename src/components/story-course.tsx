@@ -11,15 +11,14 @@ import {
   storyMessageUsesTypewriter,
   storyProgressLimit,
   type StoryCheckpoint,
-  type StoryMessage,
-  type StoryRole,
 } from "@/domain/chapter-story";
 import type { SpriteAsset } from "@/lib/game-art-assets";
 import type { ChapterDetail } from "@/server/chapter-service";
 
 import { EnvironmentBackdrop } from "./environment-backdrop";
+import { STORY_ROLE_LABEL, StoryBubble } from "./story-bubble";
 import { StoryPracticeGate, storyCheckpointLabel, storyProgressAnnouncement } from "./story-practice-gate";
-import { StageSpeakerPortrait, StoryPortrait } from "./story-speaker-portrait";
+import { StageSpeakerPortrait } from "./story-speaker-portrait";
 
 interface StoryCourseProperties {
   readonly battleState: "idle" | "running" | "passed" | "failed";
@@ -31,6 +30,7 @@ interface StoryCourseProperties {
   readonly heroName: string;
   readonly hasPracticeFeedback: boolean;
   readonly onCheckpointChange: (checkpoint: StoryCheckpoint | undefined) => void;
+  readonly onCheckpointComplete: (checkpointId: string) => void;
   readonly onRequestChallenge: () => void;
   readonly reducedMotion: boolean;
   readonly sceneAsset: string;
@@ -41,50 +41,10 @@ interface TypingState {
   readonly length: number;
 }
 
-const ROLE_LABEL: Readonly<Record<StoryRole, string>> = {
-  narrator: "旁白",
-  hero: "英雄",
-  friendly: "友善 NPC",
-  neutral: "中立 NPC",
-  hostile: "敌对 NPC",
-};
-
 const TYPING_INTERVAL_MS = 16;
 const INTRO_HOLD_MS = 2_200;
 const TRANSITION_MS = 380;
 const SCROLL_CHARACTER_INTERVAL = 24;
-
-const StoryBubble = ({
-  avatarId,
-  bossSprite,
-  message,
-  typingText,
-}: {
-  readonly avatarId: number;
-  readonly bossSprite?: SpriteAsset;
-  readonly message: StoryMessage;
-  readonly typingText?: string;
-}): React.ReactNode => (
-  <li className={`story-message story-message-${message.kind}`} data-role={message.role}>
-    <div className="story-speaker">
-      <StoryPortrait avatarId={avatarId} bossSprite={bossSprite} role={message.role} speaker={message.speaker} />
-      <span>
-        <small>{ROLE_LABEL[message.role]}</small>
-        <strong>{message.speaker}</strong>
-      </span>
-    </div>
-    <div className="story-bubble-body course-prose">
-      {typingText === undefined ? (
-        <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.markdown}</ReactMarkdown>
-      ) : (
-        <>
-          <span className="sr-only">{storyMessageText(message.markdown)}</span>
-          <span aria-hidden="true" className="story-typing-text">{typingText}<i className="story-cursor" /></span>
-        </>
-      )}
-    </div>
-  </li>
-);
 
 export const StoryCourse = ({
   battleState,
@@ -96,6 +56,7 @@ export const StoryCourse = ({
   heroName,
   hasPracticeFeedback,
   onCheckpointChange,
+  onCheckpointComplete,
   onRequestChallenge,
   reducedMotion,
   sceneAsset,
@@ -168,7 +129,8 @@ export const StoryCourse = ({
       return;
     }
     if (practiceBlocked) {
-      requestChallenge();
+      if (activeCheckpoint?.requirement === "confirm") onCheckpointComplete(activeCheckpoint.id);
+      else requestChallenge();
       return;
     }
     if (!currentMessage) return;
@@ -230,7 +192,7 @@ export const StoryCourse = ({
           data-role={currentMessage?.role ?? "narrator"}
           data-side={currentMessage?.role === "hero" ? "right" : "left"}
         >
-          <span>{ROLE_LABEL[currentMessage?.role ?? "narrator"]}</span>
+          <span>{STORY_ROLE_LABEL[currentMessage?.role ?? "narrator"]}</span>
           <strong>{currentMessage?.speaker ?? "冒险主持人"}</strong>
           <small>{storyComplete ? "故事段落已读完" : `${Math.min(completedCount + 1, story.messages.length)} / ${story.messages.length}`}</small>
         </div>
@@ -260,6 +222,9 @@ export const StoryCourse = ({
                 blocked={practiceBlocked}
                 checkpoint={currentMessage.checkpoint}
                 markdown={currentMessage.markdown}
+                onConfirm={() => {
+                  if (currentMessage.checkpoint) onCheckpointComplete(currentMessage.checkpoint.id);
+                }}
                 onRequestChallenge={requestChallenge}
               />
             ) : (
@@ -289,7 +254,7 @@ export const StoryCourse = ({
             <span>{practiceBlocked
               ? activeCheckpoint ? storyCheckpointLabel(activeCheckpoint) : "先完成一次运行"
               : isTyping ? "立即显示本段" : "继续"}</span>
-            <kbd>{practiceBlocked ? "去挑战" : isTyping ? "CLICK" : "ENTER"}</kbd>
+            <kbd>{practiceBlocked ? activeCheckpoint?.requirement === "confirm" ? "确认" : "去挑战" : isTyping ? "CLICK" : "ENTER"}</kbd>
           </button>
         )}
       </div>
