@@ -335,6 +335,29 @@ input {
   line-height: 1.78;
 }
 
+.course-prose ul,
+.course-prose ol {
+  margin: 0.65em 0;
+  padding-left: 1.75em;
+}
+
+.course-prose ul {
+  list-style: square;
+}
+
+.course-prose ol {
+  list-style: decimal;
+}
+
+.course-prose li + li {
+  margin-top: 0.35em;
+}
+
+.course-prose li::marker {
+  color: var(--accent);
+  font-weight: 700;
+}
+
 .course-prose h1,
 .course-prose h2,
 .course-prose h3,

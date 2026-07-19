@@ -39,8 +39,8 @@ test("story checkpoints persist idempotently for accessible chapters", () => {
   assert.throws(() => recordStoryCheckpoint(state, 1, "../invalid"), /检查点/);
 
   let full = state;
-  for (let checkpoint = 1; checkpoint <= 5; checkpoint += 1) full = recordStoryCheckpoint(full, 1, `checkpoint-${checkpoint}`);
-  assert.throws(() => recordStoryCheckpoint(full, 1, "checkpoint-6"), /数量/);
+  for (let checkpoint = 1; checkpoint <= 10; checkpoint += 1) full = recordStoryCheckpoint(full, 1, `checkpoint-${checkpoint}`);
+  assert.throws(() => recordStoryCheckpoint(full, 1, "checkpoint-11"), /数量/);
 });
 
 test("audio preferences update within the contracted volume range", () => {

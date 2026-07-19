@@ -91,7 +91,7 @@
           "propertyNames": { "pattern": "^(?:[1-9]|1[0-7])$" },
           "additionalProperties": {
             "type": "array",
-            "maxItems": 5,
+            "maxItems": 10,
             "uniqueItems": true,
             "items": { "type": "string", "pattern": "^[a-z0-9-]{1,64}$" }
           }

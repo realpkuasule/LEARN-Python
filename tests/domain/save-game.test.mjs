@@ -1,13 +1,21 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createGameState } from "../../src/domain/game-state.ts";
+import { completeChapter, createGameState, recordStoryCheckpoint } from "../../src/domain/game-state.ts";
 import { parseGameState, serializeGameState } from "../../src/domain/save-game.ts";
 
 const state = createGameState("刘老三", 3, "2026-07-16T00:00:00.000Z", "hero-1");
 
 test("a contracted game state survives export and import", () => {
   assert.deepEqual(parseGameState(serializeGameState(state)), state);
+});
+
+test("a chapter can persist six ordered teaching checkpoints", () => {
+  const checkpointIds = ["binding-reassignment", "shared-list", "exercise-1", "exercise-2", "exercise-3", "final-challenge"];
+  let progressed = completeChapter(completeChapter(state, 1), 2);
+  for (const checkpointId of checkpointIds) progressed = recordStoryCheckpoint(progressed, 3, checkpointId);
+
+  assert.deepEqual(parseGameState(serializeGameState(progressed)), progressed);
 });
 
 test("legacy v1 saves migrate to the current progress and achievement contract", () => {

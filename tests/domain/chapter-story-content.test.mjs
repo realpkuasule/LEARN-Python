@@ -96,6 +96,8 @@ test("all published chapters satisfy the playable story contract", async () => {
       checkpoints.map(({ id }) => id),
       chapter.number === 2
         ? ["first-run", "multi-line-output", "comma-output", "syntax-error", "final-challenge"]
+        : chapter.number === 3
+          ? ["binding-reassignment", "shared-list", "exercise-1", "exercise-2", "exercise-3", "final-challenge"]
         : ["exercise-1", "exercise-2", "exercise-3", "final-challenge"],
       `chapter ${chapter.number} gates every authored exercise in order`,
     );
@@ -115,9 +117,34 @@ test("all published chapters satisfy the playable story contract", async () => {
         ["final-challenge", "pass"],
       ]);
     }
+
+    if (chapter.number === 3) {
+      const chapterCheckpoints = story.messages.flatMap(({ checkpoint }) => checkpoint ? [checkpoint] : []);
+      const earlyPractice = chapterCheckpoints.slice(0, 2);
+      assert.deepEqual(earlyPractice.map(({ id, requirement }) => [id, requirement]), [
+        ["binding-reassignment", "output"],
+        ["shared-list", "output"],
+      ]);
+      assert.match(earlyPractice[0]?.starterCode ?? "", /a = 100[\s\S]*b = a[\s\S]*a = 200/);
+      assert.match(earlyPractice[1]?.starterCode ?? "", /背包b = 背包a[\s\S]*背包a\[0\] = "身份证"/);
+      const firstPracticeIndex = story.messages.findIndex(({ checkpoint }) => checkpoint?.id === "binding-reassignment");
+      const sharedListIndex = story.messages.findIndex(({ checkpoint }) => checkpoint?.id === "shared-list");
+      assert.ok(
+        firstPracticeIndex < story.messages.findIndex(({ markdown: content }) => /场景二：可变对象/.test(content)),
+        "chapter 3 runs the rebinding example before introducing its second concept",
+      );
+      assert.ok(
+        sharedListIndex < story.messages.findIndex(({ markdown: content }) => /场景三：函数参数/.test(content)),
+        "chapter 3 runs the shared-list example before introducing its third concept",
+      );
+      const titleExercise = chapterCheckpoints.find(({ id }) => id === "exercise-1");
+      assert.match(titleExercise?.starterCode ?? "", /hero_name = "勇者刘老三"/);
+      assert.match(titleExercise?.starterCode ?? "", /title = "赤帝之子"/);
+      assert.match(titleExercise?.starterCode ?? "", /full_title = hero_name \+ "·" \+ title/);
+    }
   }
 
-  assert.deepEqual(requirementCounts, { confirm: 3, pass: 17, success: 6, output: 41, error: 2 });
+  assert.deepEqual(requirementCounts, { confirm: 3, pass: 17, success: 6, output: 43, error: 2 });
 });
 
 test("every chapter can advance through each gate to its recap", async () => {

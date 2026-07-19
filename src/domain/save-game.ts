@@ -1,4 +1,4 @@
-import { DEFAULT_SFX_VOLUME, type GameState } from "./game-state.ts";
+import { DEFAULT_SFX_VOLUME, MAX_STORY_CHECKPOINTS_PER_CHAPTER, type GameState } from "./game-state.ts";
 import { TITLES, unlockEarnedTitles } from "./titles.ts";
 
 type JsonRecord = Record<string, unknown>;
@@ -17,7 +17,6 @@ const LEGACY_SETTINGS_KEYS = ["soundEnabled", "reducedMotion"] as const;
 const INVENTORY_KEYS = ["itemId", "quantity"] as const;
 const MAX_CHAPTER = 17;
 const MAX_HINTS_PER_EXERCISE = 3;
-const MAX_STORY_CHECKPOINTS_PER_CHAPTER = 5;
 const MAX_INVENTORY_ITEMS = 20;
 const TITLE_NAMES = new Set(TITLES.map(({ name }) => name));
 

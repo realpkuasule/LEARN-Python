@@ -34,6 +34,33 @@ test("chapter two is completed on the website while local Python stays optional"
   assert.match(markdown, /^## 可选扩展：搭建本地 Python 环境$/m);
 });
 
+test("chapter three teaches name binding without object lifetime myths", async () => {
+  const chapter = CHAPTERS.find(({ number }) => number === 3);
+  assert.ok(chapter);
+  assert.match(chapter.exercise.instructions, /绑定.*字符串/);
+
+  const sources = await Promise.all([
+    readFile(new URL(`../../${chapter.sourcePath}`, import.meta.url), "utf8"),
+    readFile(new URL("../../docs/Python-DragonQuest/讲Python-全知识点-勇者斗恶龙版.md", import.meta.url), "utf8"),
+  ]);
+
+  for (const source of sources) {
+    assert.match(source, /名字.*绑定.*对象/);
+    assert.doesNotMatch(source, /不管有没有标签，它都在那|创建新对象\s*\d+|不是[「\"]没有[」\"]，是[「\"]还没[」\"]|不是不存在，是还没触发/);
+  }
+
+  const courseSources = await Promise.all(CHAPTERS.map(({ sourcePath }) => (
+    readFile(new URL(`../../${sourcePath}`, import.meta.url), "utf8")
+  )));
+  assert.ok(courseSources.every((source) => !/变量就是给数据贴标签|变量是[「\"]给数据贴标签[」\"]|`=` 是贴标签/.test(source)));
+
+  const chapterMarkdown = sources[0];
+  assert.match(chapterMarkdown, /普通赋值不会复制这个对象/);
+  assert.match(chapterMarkdown, /对象.*是否仍留在内存.*实现细节/);
+  assert.match(chapterMarkdown, /None.*值的缺失/);
+  assert.match(chapterMarkdown, /\/\/.*向下取整/);
+});
+
 test("rewards follow the PRD chapter formulas", () => {
   for (const chapter of CHAPTERS) {
     assert.equal(chapter.rewardExp, chapter.number * 100);

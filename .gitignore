@@ -5,6 +5,8 @@
 
 # tmp
 docs/tmp
+__pycache__/
+*.py[cod]
 
 # Local OS and art-generation sources
 .DS_Store

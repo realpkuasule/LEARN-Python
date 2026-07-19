@@ -98,6 +98,7 @@ test("local save contract is versioned and rejects unknown fields", async () => 
   assert.equal(schema.properties.progress.properties.completedChapters.uniqueItems, true);
   assert.ok(schema.properties.progress.required.includes("hintsRevealed"));
   assert.ok(schema.properties.progress.required.includes("storyCheckpoints"));
+  assert.equal(schema.properties.progress.properties.storyCheckpoints.additionalProperties.maxItems, 10);
   assert.equal(schema.properties.inventory.maxItems, 20);
   assert.equal(schema.properties.achievements.properties.unlockedTitles.items.enum.length, 16);
   assert.ok(schema.properties.achievements.properties.unlockedTitles.items.enum.includes("人工智能"));
