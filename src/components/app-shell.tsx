@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 
+import { OnboardingTour } from "@/components/onboarding-tour";
 import { PixelAvatar } from "@/components/pixel-avatar";
 import { PixelSprite } from "@/components/pixel-sprite";
 import { playSound } from "@/lib/audio-assets";
@@ -30,14 +31,15 @@ export const AppShell = ({ children }: Readonly<{ children: ReactNode }>): React
           <PixelSprite className="brand-mark" size={32} sprite={guiSpriteAsset("python-rune")} />
           <span>Python 勇者斗恶龙</span>
         </Link>
-        <nav aria-label="主导航" className="main-nav">
+        <nav aria-label="主导航" className="main-nav" data-tour="main-navigation">
           {NAVIGATION.map(({ href, label }) => (
             <Link aria-current={pathname.startsWith(href) ? "page" : undefined} href={href} key={href}>
               {label}
             </Link>
           ))}
         </nav>
-        <div className="hero-hud" aria-label="勇者状态">
+        <div className="hero-hud" aria-label="勇者状态" data-tour="hero-status">
+          <OnboardingTour autoStart={!pathname.startsWith("/chapter/")} />
           {game ? (
             <>
               <span className="hud-stat">LV <strong>{game.hero.level}</strong></span>

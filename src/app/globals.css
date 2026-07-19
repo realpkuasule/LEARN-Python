@@ -259,6 +259,102 @@ input {
   color: var(--accent);
 }
 
+.tour-launcher {
+  border-color: var(--accent-pressed);
+  color: var(--accent);
+}
+
+.onboarding-shade,
+.onboarding-focus,
+.onboarding-card {
+  position: fixed;
+}
+
+.onboarding-shade {
+  inset: 0;
+  z-index: 100;
+  background: transparent;
+}
+
+.onboarding-shade.is-solid {
+  background: rgb(3 8 18 / 82%);
+}
+
+.onboarding-focus {
+  z-index: 101;
+  border: 3px solid var(--accent);
+  box-shadow:
+    0 0 0 3px var(--border-dark),
+    0 0 0 9999px rgb(3 8 18 / 78%);
+  pointer-events: none;
+  transition: inset 180ms steps(3, end), width 180ms steps(3, end), height 180ms steps(3, end);
+}
+
+.onboarding-card {
+  bottom: 24px;
+  left: 50%;
+  z-index: 102;
+  width: min(560px, calc(100% - 32px));
+  padding: 24px;
+  transform: translateX(-50%);
+  animation: onboarding-card-enter 180ms steps(3, end);
+}
+
+.onboarding-card.is-centered {
+  top: 50%;
+  bottom: auto;
+  transform: translate(-50%, -50%);
+}
+
+.onboarding-kicker {
+  margin: 0 0 8px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+}
+
+.onboarding-card h2 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(1.35rem, 4vw, 1.8rem);
+  line-height: 1.3;
+}
+
+.onboarding-card > .muted {
+  margin: 12px 0 0;
+}
+
+.onboarding-progress {
+  display: flex;
+  gap: 6px;
+  margin: 20px 0;
+}
+
+.onboarding-progress span {
+  height: 5px;
+  flex: 1;
+  background: var(--surface-raised);
+}
+
+.onboarding-progress span.is-complete {
+  background: var(--accent);
+}
+
+.onboarding-actions,
+.onboarding-actions > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.onboarding-actions {
+  justify-content: space-between;
+}
+
+@keyframes onboarding-card-enter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
 .page-container {
   width: min(1440px, calc(100% - 48px));
   margin: 0 auto;
@@ -415,6 +511,31 @@ input {
   .page-container {
     width: min(100% - 24px, 1440px);
     padding-top: 20px;
+  }
+
+  .tour-launcher {
+    min-height: 32px;
+    padding: 4px 6px;
+  }
+
+  .onboarding-card {
+    bottom: 12px;
+    width: calc(100% - 24px);
+    padding: 18px;
+  }
+
+  .onboarding-actions {
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .onboarding-actions > div:last-child {
+    justify-content: flex-end;
+  }
+
+  .onboarding-actions .pixel-button {
+    min-height: 40px;
+    padding: 8px 10px;
   }
 }
 

@@ -7,6 +7,7 @@ import { useCallback, useState } from "react";
 import { BossEncounter } from "@/components/boss-encounter";
 import { AiSpellbook } from "@/components/ai-spellbook";
 import { EnvironmentBackdrop } from "@/components/environment-backdrop";
+import { ChapterOnboardingTour } from "@/components/onboarding-tour";
 import { StoryCourse } from "@/components/story-course";
 import { getBossDialogue } from "@/domain/boss-dialogues";
 import { getChapterHints } from "@/domain/chapter-hints";
@@ -74,6 +75,10 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
     ? dragonBattleEnvironmentAsset()
     : chapterEnvironmentAsset(chapter.number);
 
+  const changeTourStep = useCallback((stepIndex: number): void => {
+    setMobilePanel(stepIndex < 2 ? "course" : "code");
+  }, []);
+
   const changeCheckpoint = useCallback((checkpoint: StoryCheckpoint | undefined): void => {
     setActiveCheckpoint(checkpoint);
     if (checkpoint?.requirement === "pass") setCode(chapter.exercise.starterCode);
@@ -132,11 +137,12 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
 
   return (
     <main className={`chapter-layout view-${mobilePanel}`} id="main-content">
+      <ChapterOnboardingTour onStepChange={changeTourStep} />
       <nav aria-label="章节移动端视图" className="chapter-mobile-tabs">
         <button aria-pressed={mobilePanel === "course"} className="pixel-button secondary" onClick={() => setMobilePanel("course")} type="button">课程内容</button>
         <button aria-pressed={mobilePanel === "code"} className="pixel-button secondary" onClick={() => setMobilePanel("code")} type="button">代码挑战</button>
       </nav>
-      <article className="course-scroll pixel-panel">
+      <article className="course-scroll pixel-panel" data-tour="chapter-story">
         <StoryCourse
           battleState={state}
           bossSprite={bossSprite}
@@ -198,7 +204,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
         <p className="mission-copy">{activeCheckpoint?.instruction
           ?? (waitingForCheckpoint ? "继续左侧剧情。到达实践检查点后，这里的运行按钮才会解锁。" : chapter.exercise.instructions)}</p>
         <p className="workbench-field-label">Python 代码 <span>必填</span></p>
-        <div className="editor-frame" aria-label="Python 代码编辑器">
+        <div className="editor-frame" aria-label="Python 代码编辑器" data-tour="chapter-editor">
           <Editor
             height="42vh"
             language="python"
@@ -224,7 +230,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
             />
           </div>
         </details>
-        <button className="pixel-button w-full" disabled={!hydrated || !chapterAccessible || waitingForCheckpoint || state === "running"} onClick={() => void run()} type="button">
+        <button className="pixel-button w-full" data-tour="chapter-run" disabled={!hydrated || !chapterAccessible || waitingForCheckpoint || state === "running"} onClick={() => void run()} type="button">
           {!hydrated
             ? "读取存档..."
             : !chapterAccessible
@@ -239,7 +245,7 @@ export const ChapterWorkbench = ({ chapter }: ChapterWorkbenchProperties): React
                   ? (chapter.isBoss ? "发动代码攻击" : "运行并挑战")
                   : "运行练习"}
         </button>
-        <section className={`result-panel ${state === "passed" ? "passed" : state === "failed" ? "failed" : ""}`} aria-live="polite">
+        <section className={`result-panel ${state === "passed" ? "passed" : state === "failed" ? "failed" : ""}`} aria-live="polite" data-tour="chapter-log">
           <h3>冒险日志</h3>
           <pre>{output}</pre>
         </section>
